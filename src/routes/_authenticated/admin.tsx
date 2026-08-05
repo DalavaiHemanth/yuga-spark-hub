@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Stethoscope } from "lucide-react";
 import { SystemChecksPanel } from "@/components/admin/SystemChecksPanel";
+import { AdminSearch, type SearchHit } from "@/components/admin/AdminSearch";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
@@ -69,7 +70,7 @@ type SectionDef = {
   title: string;
   description: string;
   ownerOnly?: boolean;
-  render: () => React.ReactNode;
+  render: (query?: string) => React.ReactNode;
 };
 
 const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
@@ -82,7 +83,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: Users,
         title: "Members",
         description: "Import students, review profiles, reset passwords and manage accounts.",
-        render: () => <MembersPanel />,
+        render: (query) => <MembersPanel initialQuery={query} />,
       },
       {
         key: "mail",
@@ -113,7 +114,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: CalendarPlus,
         title: "Hackathons",
         description: "Create events, set team size and control registrations.",
-        render: () => <HackathonsPanel />,
+        render: (query) => <HackathonsPanel initialQuery={query} />,
       },
       {
         key: "results",
