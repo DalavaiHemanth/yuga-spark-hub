@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Trophy, Medal, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
