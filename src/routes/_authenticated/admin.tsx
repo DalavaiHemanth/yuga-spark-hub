@@ -954,16 +954,18 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
 
       <div className="surface overflow-hidden">
         <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
-          <h2 className="font-display text-sm font-bold">All hackathons</h2>
+          <h2 className="font-display text-sm font-bold">
+            {initialQuery ? `Matching “${initialQuery}”` : "All hackathons"}
+          </h2>
           <Badge variant="secondary" className="font-mono text-[11px]">
-            {hackathons.data?.length ?? 0}
+            {visibleHackathons.length}
           </Badge>
         </div>
         <ul className="divide-y divide-border">
-          {(hackathons.data ?? []).map((h) => (
+          {visibleHackathons.map((h) => (
             <HackathonRow key={h.id} hackathon={h} onChanged={() => hackathons.refetch()} />
           ))}
-          {hackathons.data?.length === 0 ? (
+          {visibleHackathons.length === 0 ? (
             <li className="p-5">
               <EmptyState
                 tone="quiet"
