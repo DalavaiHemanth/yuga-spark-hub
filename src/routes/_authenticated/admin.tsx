@@ -450,14 +450,14 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
               {member.registration_number ?? "no reg no."} · {member.year ?? "year not set"}
               {member.personal_email ? ` · ${member.personal_email}` : ""}
             </p>
-            <p className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+            <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
               <span className="rounded bg-secondary px-1.5 py-0.5">
                 photo {member.photo_url ? "✓" : "—"}
               </span>
               <span className="rounded bg-secondary px-1.5 py-0.5">
                 resume {member.resume_url ? "✓" : "—"}
               </span>
-            </p>
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 gap-1">
@@ -840,7 +840,7 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{h.title}</p>
-          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <CalendarDays className="h-3.5 w-3.5" />
               {new Date(h.event_date).toLocaleDateString()}
@@ -856,7 +856,7 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
             <Badge variant="outline" className="text-[10px] capitalize">
               {h.mode}
             </Badge>
-          </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <span className="text-xs text-muted-foreground">Reg</span>
@@ -974,12 +974,12 @@ function AccessPanelInner() {
       </div>
       <div className="flex items-center justify-between gap-6 rounded-lg border border-border bg-secondary/40 p-4">
         <div>
-          <p className="flex items-center gap-2 text-sm font-medium">
+          <div className="flex items-center gap-2 text-sm font-medium">
             {open ? "Open to any email" : "Invite-only"}
             <Badge variant={open ? "secondary" : "default"} className="text-[10px]">
               {open ? "open" : "restricted"}
             </Badge>
-          </p>
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
             {open
               ? "Anyone with any email address can create an account."
