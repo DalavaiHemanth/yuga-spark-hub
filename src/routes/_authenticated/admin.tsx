@@ -618,8 +618,13 @@ function HackathonsPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form onSubmit={create} className="space-y-4 surface p-6">
-        <h2 className="label-mono text-muted-foreground">New hackathon</h2>
+      <form onSubmit={create} className="surface space-y-4 p-6 lg:sticky lg:top-20 lg:self-start">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+            <CalendarPlus className="h-4 w-4" />
+          </span>
+          <h2 className="font-display text-sm font-bold">New hackathon</h2>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
           <Input
@@ -734,23 +739,36 @@ function HackathonsPanel() {
             onChange={(e) => setForm({ ...form, banner_url: e.target.value })}
           />
         </div>
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" className="w-full" disabled={busy}>
           {busy ? "Publishing…" : "Publish hackathon"}
         </Button>
       </form>
 
-      <div className="surface">
-        <div className="border-b border-border px-5 py-3">
-          <h2 className="label-mono text-muted-foreground">
-            All hackathons ({hackathons.data?.length ?? 0})
-          </h2>
+      <div className="surface overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
+          <h2 className="font-display text-sm font-bold">All hackathons</h2>
+          <Badge variant="secondary" className="font-mono text-[11px]">
+            {hackathons.data?.length ?? 0}
+          </Badge>
         </div>
         <ul className="divide-y divide-border">
           {(hackathons.data ?? []).map((h) => (
             <HackathonRow key={h.id} hackathon={h} onChanged={() => hackathons.refetch()} />
           ))}
           {hackathons.data?.length === 0 ? (
-            <li className="px-5 py-6 text-sm text-muted-foreground">No hackathons yet.</li>
+            <li className="p-5">
+              <EmptyState
+                tone="quiet"
+                icon={CalendarDays}
+                title="No hackathons yet"
+                description="Publish your first event — it appears on every member's dashboard instantly."
+                steps={[
+                  "Fill in the title, date and timings on the left",
+                  "Set the team size range students must form squads within",
+                  "Publish — registrations open right away",
+                ]}
+              />
+            </li>
           ) : null}
         </ul>
       </div>
