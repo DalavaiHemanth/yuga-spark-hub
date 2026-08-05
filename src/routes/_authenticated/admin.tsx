@@ -62,6 +62,7 @@ type SectionDef = {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
+  ownerOnly?: boolean;
   render: () => React.ReactNode;
 };
 
@@ -83,6 +84,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: Mail,
         title: "Mail",
         description: "Send individual or bulk email to club members.",
+        ownerOnly: true,
         render: () => <MailPanel />,
       },
       {
@@ -91,6 +93,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: Inbox,
         title: "Student inbox",
         description: "Answer doubts students send from the Ask admin page.",
+        ownerOnly: true,
         render: () => <InboxPanel />,
       },
     ],
@@ -154,6 +157,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: Lock,
         title: "Access control",
         description: "Decide who is allowed to create a Yuga Spark account.",
+        ownerOnly: true,
         render: () => <AccessPanel />,
       },
     ],
