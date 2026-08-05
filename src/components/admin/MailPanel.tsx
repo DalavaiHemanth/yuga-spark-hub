@@ -156,6 +156,7 @@ export function MailPanel() {
   }
 
   return (
+    <div className="space-y-6">
     <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
       <div className="surface">
         <div className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
@@ -295,6 +296,22 @@ export function MailPanel() {
           ) : null}
         </div>
       </div>
+    </div>
+
+      <TemplatePreview
+        subject={subject}
+        body={body}
+        sample={targets[0] ?? null}
+        onApplyTemplate={(t: EmailTemplate) => {
+          setSubject(t.subject);
+          setBody(t.body);
+          setKind(t.kind);
+        }}
+        onReplaceContent={({ subject: s, body: b }) => {
+          setSubject(s);
+          setBody(b);
+        }}
+      />
     </div>
   );
 }
