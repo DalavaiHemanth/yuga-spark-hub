@@ -200,11 +200,27 @@ export function MailPanel() {
           <Label htmlFor="body">Message</Label>
           <Textarea id="body" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={mailto}>Open mail app ({recipients.length})</Button>
-          <Button variant="outline" onClick={copyList}>
-            Copy addresses
-          </Button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {batches.length <= 1 ? (
+              <Button onClick={() => openBatch(0)}>Open mail app ({recipients.length})</Button>
+            ) : (
+              batches.map((batch, i) => (
+                <Button key={i} variant={i === 0 ? "default" : "outline"} onClick={() => openBatch(i)}>
+                  Batch {i + 1} ({batch.length})
+                </Button>
+              ))
+            )}
+            <Button variant="outline" onClick={copyList}>
+              Copy addresses
+            </Button>
+          </div>
+          {batches.length > 1 ? (
+            <p className="text-xs text-muted-foreground">
+              {recipients.length} recipients split into {batches.length} batches of up to 40 — mail
+              apps drop very long BCC lists. Open and send each batch in turn.
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
