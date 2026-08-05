@@ -141,7 +141,7 @@ function EmptyIllustration({
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -153,7 +153,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <SparkMark />
             </div>
           </header>
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+          <main
+            className={`mx-auto w-full flex-1 px-4 py-8 sm:px-6 sm:py-10 ${wide ? "max-w-[1400px]" : "max-w-6xl"}`}
+          >
             <div className="rise">{children}</div>
           </main>
           <Footer />
