@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { Megaphone, Link2, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -73,9 +74,27 @@ function NoticesPage() {
         description="Outside-college hackathons, club announcements, links and polls."
       />
       {list.length === 0 ? (
-        <div className="surface mt-8 p-10 text-center">
-          <Megaphone className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">Nothing posted yet.</p>
+        <div className="mt-8">
+          <EmptyState
+            icon={Megaphone}
+            title="The board is quiet right now"
+            description="Announcements, outside-college hackathons, links and polls will show up here."
+            steps={[
+              "Check the dashboard for hackathons the club has already scheduled.",
+              "Spotted an external hackathon? Tell an admin and they can post it here.",
+              "Polls appear on this board — keep an eye out so your vote counts.",
+            ]}
+            action={
+              <Button asChild size="sm">
+                <Link to="/dashboard">Go to dashboard</Link>
+              </Button>
+            }
+            secondaryAction={
+              <Button asChild size="sm" variant="outline">
+                <Link to="/chat">Share a hackathon</Link>
+              </Button>
+            }
+          />
         </div>
       ) : (
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
