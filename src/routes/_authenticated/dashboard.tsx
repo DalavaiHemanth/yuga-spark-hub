@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, StatCard, EmptyState } from "@/components/AppShell";
 import { Countdown } from "@/components/Countdown";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -145,11 +145,16 @@ function Dashboard() {
         }
       />
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
+      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map((s) => (
+          <StatCard key={s.k} label={s.k} value={s.v} />
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-4">
         {next ? (
-          <section className="surface-ink relative overflow-hidden p-6 sm:p-7 lg:col-span-2">
-            <div className="glow-blob -right-10 -top-16 h-52 w-52 opacity-40" />
-            <div className="relative">
+          <section className="surface-ink overflow-hidden p-6 sm:p-7">
+            <div>
               <p className="label-mono text-white/60">Next hackathon</p>
               <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl">{next.title}</h2>
               <p className="mt-1.5 text-sm text-white/60">
@@ -169,7 +174,7 @@ function Dashboard() {
             </div>
           </section>
         ) : (
-          <section className="surface flex flex-col justify-center p-7 lg:col-span-2">
+          <section className="surface flex flex-col justify-center p-7">
             <p className="label-mono text-muted-foreground">Next hackathon</p>
             <h2 className="mt-2 font-display text-2xl font-bold">Nothing on the calendar yet</h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -177,31 +182,20 @@ function Dashboard() {
             </p>
           </section>
         )}
-
-        <div className="grid grid-cols-2 gap-4">
-          {stats.map((s) => (
-            <div key={s.k} className="surface flex flex-col justify-between p-4 sm:p-5">
-              <p className="label-mono leading-relaxed text-muted-foreground">{s.k}</p>
-              <p className="mt-3 font-display text-3xl font-bold ember-text">{s.v}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
       {!isAdmin ? (
         <section className="mt-10">
           <h2 className="label-mono text-muted-foreground">Club shortcuts</h2>
-          <div className="mt-4 grid gap-3 grid-cols-2 lg:grid-cols-4">
-            {SHORTCUTS.map((s, i) => (
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {SHORTCUTS.map((s) => (
               <Link
                 key={s.to}
                 to={s.to}
-                className={`surface lift group flex items-start gap-3 p-4 ${
-                  i === 0 ? "col-span-2 lg:col-span-2" : ""
-                }`}
+                className="surface lift flex items-start gap-3 p-4"
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground transition-transform duration-300 group-hover:-rotate-6">
-                  <s.icon className="h-5 w-5" />
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <s.icon className="h-4.5 w-4.5" />
                 </span>
                 <span className="min-w-0">
                   <span className="block font-display text-sm font-bold">{s.label}</span>
@@ -218,11 +212,12 @@ function Dashboard() {
         {hackathons.isLoading ? (
           <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
         ) : upcoming.length === 0 ? (
-          <div className="surface mt-4 p-10 text-center">
-            <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Nothing scheduled yet. Admins will post the next event here.
-            </p>
+          <div className="mt-4">
+            <EmptyState
+              icon={CalendarDays}
+              title="Nothing scheduled yet"
+              description="Admins will post the next build night here."
+            />
           </div>
         ) : (
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -231,7 +226,7 @@ function Dashboard() {
               return (
                 <article key={h.id} className="surface lift relative flex flex-col overflow-hidden p-6">
                   {registered ? (
-                    <span className="absolute right-0 top-0 rounded-bl-xl bg-[image:var(--gradient-spark)] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-primary-foreground">
+                    <span className="absolute right-0 top-0 rounded-bl-lg bg-primary px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-primary-foreground">
                       Registered
                     </span>
                   ) : null}
