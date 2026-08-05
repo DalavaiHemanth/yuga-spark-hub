@@ -5,7 +5,12 @@ import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { adminCreateStudents, adminDeleteUser, adminSetPassword } from "@/lib/club.functions";
+import {
+  adminCreateStudents,
+  adminDeleteUser,
+  adminSetPassword,
+  STUDENT_DEFAULT_PASSWORD,
+} from "@/lib/club.functions";
 import { AppShell, PageHeader, EmptyState, StatCard } from "@/components/AppShell";
 import {
   Users,
@@ -45,6 +50,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
