@@ -15,6 +15,11 @@ const TITLE = "Sign in — Yuga Spark";
 const DESCRIPTION = "Sign in or join the Yuga Spark hackathon club portal.";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s['next'] === "string" && s['next'].startsWith("/") && !s['next'].startsWith("//")
+      ? s['next']
+      : undefined,
+  }),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -28,18 +33,30 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const { session, loading } = useAuth();
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  function goNext() {
+    if (next) {
+      window.location.href = next;
+      return;
+    }
+    navigate({ to: "/dashboard", replace: true });
+  }
 
   useEffect(() => {
     void ensureAdminAccounts().catch(() => undefined);
   }, []);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/dashboard", replace: true });
-  }, [loading, session, navigate]);
+    if (!loading && session) {
+      if (next) window.location.href = next;
+      else navigate({ to: "/dashboard", replace: true });
+    }
+  }, [loading, session, navigate, next]);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +67,7 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) toast.error(error.message);
-    else navigate({ to: "/dashboard", replace: true });
+    else goNext();
   }
 
   async function signUp(e: React.FormEvent) {
@@ -66,11 +83,11 @@ function AuthPage() {
       const { error } = await supabase.auth.signUp({
         email: normalized,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: { emailRedirectTo: next ? `${window.location.origin}${next}` : window.location.origin },
       });
       if (error) throw new Error(error.message);
       toast.success("Account created. Welcome to Yuga Spark.");
-      navigate({ to: "/dashboard", replace: true });
+      goNext();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not create the account");
     } finally {
