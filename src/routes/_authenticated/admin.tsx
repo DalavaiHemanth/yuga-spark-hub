@@ -965,11 +965,21 @@ function AccessPanelInner() {
   const open = setting.data === "open";
 
   return (
-    <div className="max-w-xl space-y-4 surface p-6">
-      <h2 className="label-mono text-muted-foreground">Who can join the club portal</h2>
-      <div className="flex items-center justify-between gap-6">
+    <div className="surface max-w-xl space-y-4 p-6">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+          <Lock className="h-4 w-4" />
+        </span>
+        <h2 className="font-display text-sm font-bold">Who can join the club portal</h2>
+      </div>
+      <div className="flex items-center justify-between gap-6 rounded-lg border border-border bg-secondary/40 p-4">
         <div>
-          <p className="text-sm font-medium">{open ? "Open to any email" : "Invite-only"}</p>
+          <p className="flex items-center gap-2 text-sm font-medium">
+            {open ? "Open to any email" : "Invite-only"}
+            <Badge variant={open ? "secondary" : "default"} className="text-[10px]">
+              {open ? "open" : "restricted"}
+            </Badge>
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {open
               ? "Anyone with any email address can create an account."
