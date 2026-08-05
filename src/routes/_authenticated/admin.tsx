@@ -268,13 +268,13 @@ function AdminWorkspace() {
 
   return (
     <>
-    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <AdminSearch onPick={handlePick} />
-      <p className="text-xs text-muted-foreground">
+      <p className="hidden text-xs text-muted-foreground sm:block">
         Find any student by name, registration number or email — or jump straight to a hackathon.
       </p>
     </div>
-    <div className="mt-4 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
+    <div className="mt-4 grid gap-4 lg:grid-cols-[236px_minmax(0,1fr)] lg:gap-6 lg:items-start">
       <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
         {groups.map((group) => (
           <div key={group.group} className="mb-2 last:mb-0">
@@ -305,39 +305,53 @@ function AdminWorkspace() {
         ))}
       </nav>
 
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
-        {allItems.map((item) => {
-          const ItemIcon = item.icon;
-          const isActive = item.key === current.key;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setActive(item.key)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              <ItemIcon className="h-3.5 w-3.5" />
-              {item.label}
-            </button>
-          );
-        })}
+      <div className="sticky top-14 z-20 -mx-4 border-y border-border bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
+        <div className="-mx-1 flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {groups.map((group) => (
+            <div key={group.group} className="flex shrink-0 items-center gap-1.5">
+              <span className="label-mono shrink-0 pl-1 pr-0.5 text-[10px] text-muted-foreground">
+                {group.group}
+              </span>
+              {group.items.map((item) => {
+                const ItemIcon = item.icon;
+                const isActive = item.key === current.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setActive(item.key)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`inline-flex min-h-9 shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    <ItemIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
       <section className="min-w-0">
-        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border bg-card px-5 py-4">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-            <Icon className="h-5 w-5" />
+        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 sm:px-5 sm:py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary sm:h-10 sm:w-10">
+            <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate font-display text-lg font-bold tracking-tight">{current.title}</h2>
-            <p className="truncate text-sm text-muted-foreground">{current.description}</p>
+            <h2 className="truncate font-display text-base font-bold tracking-tight sm:text-lg">
+              {current.title}
+            </h2>
+            <p className="line-clamp-2 text-xs text-muted-foreground sm:truncate sm:text-sm">
+              {current.description}
+            </p>
           </div>
         </header>
-        <div key={`${current.key}-${query ?? ""}`} className="rise mt-5">
+        <div key={`${current.key}-${query ?? ""}`} className="rise mt-4 sm:mt-5">
           {current.render(query)}
         </div>
       </section>
