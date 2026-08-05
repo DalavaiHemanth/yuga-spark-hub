@@ -26,6 +26,7 @@ import {
   CalendarDays,
   MapPin,
   Upload,
+  ScrollText,
 } from "lucide-react";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
@@ -34,6 +35,7 @@ import { InboxPanel } from "@/components/admin/InboxPanel";
 import { MailPanel } from "@/components/admin/MailPanel";
 import { InsightsPanel } from "@/components/admin/InsightsPanel";
 import { Button } from "@/components/ui/button";
+import { AuditPanel } from "@/components/admin/AuditPanel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,7 +56,8 @@ type SectionKey =
   | "playbook"
   | "notices"
   | "inbox"
-  | "access";
+  | "access"
+  | "audit";
 
 type SectionDef = {
   key: SectionKey;
@@ -159,6 +162,16 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         description: "Decide who is allowed to create a Yuga Spark account.",
         ownerOnly: true,
         render: () => <AccessPanel />,
+      },
+      {
+        key: "audit",
+        label: "Audit log",
+        icon: ScrollText,
+        title: "Audit log",
+        description:
+          "Timestamped record of every student, hackathon, access and password change.",
+        ownerOnly: true,
+        render: () => <AuditPanel />,
       },
     ],
   },

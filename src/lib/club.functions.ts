@@ -84,6 +84,14 @@ export const adminCreateStudents = createServerFn({ method: "POST" })
       else if (error.message.toLowerCase().includes("already")) existed += 1;
       else failed.push(email);
     }
+    await supabaseAdmin.rpc("write_audit", {
+      _action: "invite",
+      _entity: "student",
+      _entity_id: "",
+      _summary: `Invited ${data.emails.length} student account(s) — ${created} created, ${existed} already existed`,
+      _details: { emails: data.emails, created, existed, failed },
+      _actor: context.userId,
+    });
     return { created, existed, failed };
   });
 
@@ -102,6 +110,19 @@ export const adminSetPassword = createServerFn({ method: "POST" })
       password: data.password,
     });
     if (error) throw new Error(error.message);
+    const { data: target } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", data.userId)
+      .maybeSingle();
+    await supabaseAdmin.rpc("write_audit", {
+      _action: "password_reset",
+      _entity: "student",
+      _entity_id: data.userId,
+      _summary: `Password changed for ${target?.email ?? data.userId}`,
+      _details: { self: data.userId === context.userId },
+      _actor: context.userId,
+    });
     return { ok: true };
   });
 
@@ -113,7 +134,20 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
     await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("You cannot delete your own account");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: target } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", data.userId)
+      .maybeSingle();
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
+    await supabaseAdmin.rpc("write_audit", {
+      _action: "delete",
+      _entity: "student",
+      _entity_id: data.userId,
+      _summary: `Account removed: ${target?.email ?? data.userId}`,
+      _details: {},
+      _actor: context.userId,
+    });
     return { ok: true };
   });
