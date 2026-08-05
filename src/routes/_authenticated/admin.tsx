@@ -412,11 +412,15 @@ function AdminOverview() {
 }
 
 function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined }) {
+  const { isOwner } = useAuth();
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState(initialQuery ?? "");
   const [filter, setFilter] = useState<"all" | "complete" | "pending" | "inactive">("all");
   const [sort, setSort] = useState<"recent" | "name" | "year">("recent");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkPwd, setBulkPwd] = useState(STUDENT_DEFAULT_PASSWORD);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   useEffect(() => {
     if (initialQuery) {
