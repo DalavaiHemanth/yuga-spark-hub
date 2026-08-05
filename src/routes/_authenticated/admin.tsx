@@ -28,6 +28,8 @@ import {
   Upload,
   ScrollText,
 } from "lucide-react";
+import { Stethoscope } from "lucide-react";
+import { SystemChecksPanel } from "@/components/admin/SystemChecksPanel";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
@@ -57,7 +59,8 @@ type SectionKey =
   | "notices"
   | "inbox"
   | "access"
-  | "audit";
+  | "audit"
+  | "checks";
 
 type SectionDef = {
   key: SectionKey;
@@ -172,6 +175,15 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
           "Timestamped record of every student, hackathon, access and password change.",
         ownerOnly: true,
         render: () => <AuditPanel />,
+      },
+      {
+        key: "checks",
+        label: "System checks",
+        icon: Stethoscope,
+        title: "System checks",
+        description:
+          "Run quick validations for login, access, hackathon CRUD and certificate downloads.",
+        render: () => <SystemChecksPanel />,
       },
     ],
   },
