@@ -221,9 +221,13 @@ function SquadsPage() {
               </div>
             ) : (
               list.map((s) => {
-                const members = s.squad_members ?? [];
+                const all = s.squad_members ?? [];
+                const members = all.filter((m) => m.status === "joined");
+                const pending = all.filter((m) => m.status === "requested");
                 const isMember = members.some((m) => m.user_id === user?.id);
+                const isLeader = s.leader_id === user?.id;
                 const full = members.length >= active.team_max;
+                const incomplete = members.length < active.team_min;
                 return (
                   <article key={s.id} className="surface p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -233,9 +237,12 @@ function SquadsPage() {
                           Led by {names.data?.[s.leader_id] ?? "Member"}
                         </p>
                       </div>
-                      <Badge variant={full ? "secondary" : "default"}>
-                        {members.length}/{active.team_max} {full ? "full" : "open"}
-                      </Badge>
+                      <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                        <Badge variant={full ? "secondary" : "default"}>
+                          {members.length}/{active.team_max} {full ? "full" : "open"}
+                        </Badge>
+                        {incomplete ? <Badge variant="outline">Incomplete</Badge> : null}
+                      </div>
                     </div>
                     {s.pitch ? <p className="mt-3 text-sm text-muted-foreground">{s.pitch}</p> : null}
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -245,22 +252,53 @@ function SquadsPage() {
                         </span>
                       ))}
                     </div>
+                    {isLeader && pending.length > 0 ? (
+                      <div className="mt-4 rounded-lg border border-border p-3">
+                        <p className="label-mono text-muted-foreground">
+                          Join requests ({pending.length})
+                        </p>
+                        <ul className="mt-2 space-y-2">
+                          {pending.map((m) => (
+                            <li key={m.id} className="flex items-center justify-between gap-2">
+                              <span className="text-sm">{names.data?.[m.user_id] ?? "Member"}</span>
+                              <span className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  disabled={full}
+                                  onClick={() => decide(m.id, true)}
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => decide(m.id, false)}>
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
                     <div className="mt-5 flex gap-2">
                       {isMember ? (
                         <>
                           <Button variant="outline" size="sm" onClick={() => leave(s.id)}>
                             <LogOut className="mr-1.5 h-3.5 w-3.5" /> Leave
                           </Button>
-                          {s.leader_id === user?.id ? (
+                          {isLeader ? (
                             <Button variant="ghost" size="sm" onClick={() => disband(s.id)}>
                               <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Disband
                             </Button>
                           ) : null}
                         </>
+                      ) : myRequestSquadIds.has(s.id) ? (
+                        <Button size="sm" variant="outline" onClick={() => leave(s.id)}>
+                          <Clock className="mr-1.5 h-3.5 w-3.5" /> Request pending — cancel
+                        </Button>
                       ) : (
                         <Button size="sm" disabled={full || Boolean(mySquad)} onClick={() => join(s.id)}>
                           <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                          {full ? "Squad full" : mySquad ? "Already squadded" : "Join squad"}
+                          {full ? "Squad full" : mySquad ? "Already squadded" : "Request to join"}
                         </Button>
                       )}
                     </div>
