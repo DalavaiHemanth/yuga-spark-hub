@@ -102,6 +102,9 @@ function AdminPage() {
 function MembersPanel() {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<"all" | "complete" | "pending" | "inactive">("all");
+  const [sort, setSort] = useState<"recent" | "name" | "year">("recent");
 
   const members = useQuery({
     queryKey: ["all-profiles"],
@@ -165,6 +168,23 @@ function MembersPanel() {
     await createFromList(found);
   }
 
+  const visible = (() => {
+    const term = q.trim().toLowerCase();
+    let rows = (members.data ?? []).filter((m) => {
+      if (filter === "complete" && !m.profile_completed) return false;
+      if (filter === "pending" && m.profile_completed) return false;
+      if (filter === "inactive" && m.is_active) return false;
+      if (!term) return true;
+      return [m.email, m.full_name, m.registration_number, m.year, m.personal_email]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(term));
+    });
+    if (sort === "name")
+      rows = [...rows].sort((a, b) => (a.full_name ?? a.email).localeCompare(b.full_name ?? b.email));
+    if (sort === "year") rows = [...rows].sort((a, b) => (a.year ?? "").localeCompare(b.year ?? ""));
+    return rows;
+  })();
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
       <div className="space-y-6">
@@ -207,16 +227,49 @@ function MembersPanel() {
       </div>
 
       <div className="surface">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="label-mono text-muted-foreground">
-            Members ({members.data?.length ?? 0})
-          </h2>
+        <div className="space-y-3 border-b border-border px-5 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="label-mono text-muted-foreground">
+              Members ({visible.length}/{members.data?.length ?? 0})
+            </h2>
+          </div>
+          <Input
+            value={q}
+            placeholder="Search name, email, roll number, year…"
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <div className="flex flex-wrap gap-2">
+            {(["all", "complete", "pending", "inactive"] as const).map((f) => (
+              <Button
+                key={f}
+                size="sm"
+                variant={filter === f ? "default" : "outline"}
+                onClick={() => setFilter(f)}
+                className="capitalize"
+              >
+                {f}
+              </Button>
+            ))}
+            <span className="ml-auto flex gap-2">
+              {(["recent", "name", "year"] as const).map((s) => (
+                <Button
+                  key={s}
+                  size="sm"
+                  variant={sort === s ? "secondary" : "ghost"}
+                  onClick={() => setSort(s)}
+                  className="capitalize"
+                >
+                  {s}
+                </Button>
+              ))}
+            </span>
+          </div>
         </div>
         <ul className="divide-y divide-border">
-          {(members.data ?? []).map((m) => (
+          {visible.map((m) => (
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
-          {members.data?.length === 0 ? (
+          {visible.length === 0 ? (
             <li className="px-5 py-6 text-sm text-muted-foreground">No members yet.</li>
           ) : null}
         </ul>
@@ -234,6 +287,9 @@ type MemberRowProps = {
     year: string | null;
     personal_email: string | null;
     profile_completed: boolean;
+    is_active: boolean;
+    photo_url: string | null;
+    resume_url: string | null;
   };
   onChanged: () => void;
 };
@@ -246,14 +302,44 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
     <li className="px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{member.full_name ?? "Unnamed member"}</p>
+          <p className="flex items-center gap-2 truncate text-sm font-medium">
+            {member.full_name ?? "Unnamed member"}
+            {!member.is_active ? (
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                inactive
+              </span>
+            ) : null}
+          </p>
           <p className="font-mono text-xs text-muted-foreground">{member.email}</p>
           <p className="label-mono mt-1 text-muted-foreground">
             {member.registration_number ?? "no reg"} · {member.year ?? "no year"} ·{" "}
             {member.profile_completed ? "profile complete" : "profile pending"}
           </p>
+          {member.personal_email ? (
+            <p className="label-mono text-muted-foreground">{member.personal_email}</p>
+          ) : null}
+          <p className="label-mono text-muted-foreground">
+            photo {member.photo_url ? "✓" : "—"} · resume {member.resume_url ? "✓" : "—"}
+          </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              const { error } = await supabase
+                .from("profiles")
+                .update({ is_active: !member.is_active })
+                .eq("id", member.id);
+              if (error) toast.error(error.message);
+              else {
+                toast.success(member.is_active ? "Member deactivated" : "Member reactivated");
+                onChanged();
+              }
+            }}
+          >
+            {member.is_active ? "Deactivate" : "Activate"}
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
             Password
           </Button>
