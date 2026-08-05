@@ -73,9 +73,38 @@ function ChatPage() {
       <div className="surface mt-8 flex h-[540px] flex-col overflow-hidden">
         <div className="flex-1 space-y-3 overflow-y-auto p-6">
           {list.length === 0 ? (
-            <p className="mt-20 text-center text-sm text-muted-foreground">
-              No messages yet. Say hello 👋
-            </p>
+            <div className="grid h-full place-items-center px-2">
+              <div className="max-w-sm text-center">
+                <div className="relative mx-auto grid h-20 w-28 place-items-center">
+                  <span className="absolute left-0 top-2 h-11 w-16 -rotate-6 rounded-xl border border-border bg-background shadow-sm" />
+                  <span className="absolute right-0 top-0 h-11 w-16 rotate-6 rounded-xl border border-border bg-background shadow-sm" />
+                  <span className="absolute h-12 w-20 rounded-xl border border-border bg-card shadow-md" />
+                  <span className="relative grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary ring-8 ring-card">
+                    <MessageSquare className="h-4.5 w-4.5" />
+                  </span>
+                </div>
+                <p className="mt-5 font-display text-base font-bold">No messages yet</p>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  Admins usually reply within a day. Try one of these to get started:
+                </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {[
+                    "How do I join a squad?",
+                    "When is the next hackathon?",
+                    "My certificate is missing",
+                  ].map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setBody(q)}
+                      className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : (
             list.map((m) => (
               <div key={m.id} className={`flex ${m.from_admin ? "justify-start" : "justify-end"}`}>
