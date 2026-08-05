@@ -79,14 +79,14 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col paper-bg">
       <header className="border-b border-border/70">
         <div className="mx-auto max-w-6xl px-6 py-4">
           <SparkMark />
         </div>
       </header>
       <main className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md rounded-[4px] border border-border bg-card p-8 shadow-[var(--shadow-spark)]">
+        <div className="w-full max-w-md surface p-8 ">
           <p className="label-mono text-primary">Club access</p>
           <h1 className="mt-3 text-3xl font-bold">Enter Yuga Spark</h1>
           <Tabs defaultValue="signin" className="mt-6">

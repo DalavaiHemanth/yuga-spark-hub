@@ -98,7 +98,7 @@ function Onboarding() {
 
         <form
           onSubmit={submit}
-          className="mt-8 space-y-5 rounded-[4px] border border-border bg-card p-6"
+          className="mt-8 space-y-5 surface p-6"
         >
           <div className="space-y-2">
             <Label htmlFor="fullName">Full name</Label>

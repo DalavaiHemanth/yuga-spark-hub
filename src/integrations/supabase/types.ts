@@ -425,6 +425,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_leaderboard: {
+        Args: { _hackathon_id?: string }
+        Returns: {
+          events: number
+          full_name: string
+          photo_url: string
+          points: number
+          user_id: string
+          wins: number
+        }[]
+      }
+      get_member_names: {
+        Args: never
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
