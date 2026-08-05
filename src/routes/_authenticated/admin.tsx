@@ -153,6 +153,44 @@ function AdminPage() {
 }
 
 function MembersPanel() {
+  return <MembersPanelInner />;
+}
+
+function AdminOverview() {
+  const stats = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const [members, hackathons, registrations, messages] = await Promise.all([
+        supabase.from("profiles").select("id,profile_completed,is_active"),
+        supabase.from("hackathons").select("id,event_date,registration_open"),
+        supabase.from("registrations").select("id"),
+        supabase.from("messages").select("id,from_admin"),
+      ]);
+      const profiles = members.data ?? [];
+      const events = hackathons.data ?? [];
+      const today = new Date().toISOString().slice(0, 10);
+      return {
+        members: profiles.length,
+        pending: profiles.filter((p) => !p.profile_completed).length,
+        upcoming: events.filter((e) => e.event_date >= today).length,
+        registrations: registrations.data?.length ?? 0,
+        questions: (messages.data ?? []).filter((m) => !m.from_admin).length,
+      };
+    },
+  });
+
+  const s = stats.data;
+  return (
+    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard label="Members" value={s?.members ?? "—"} hint={`${s?.pending ?? 0} profiles pending`} />
+      <StatCard label="Upcoming hackathons" value={s?.upcoming ?? "—"} hint="Visible to students now" />
+      <StatCard label="Registrations" value={s?.registrations ?? "—"} hint="Across all events" />
+      <StatCard label="Student questions" value={s?.questions ?? "—"} hint="Messages in the inbox" />
+    </div>
+  );
+}
+
+function MembersPanelInner() {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
