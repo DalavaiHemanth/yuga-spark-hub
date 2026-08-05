@@ -69,25 +69,70 @@ export function EmptyState({
   icon: Icon,
   title,
   description,
+  steps,
   action,
+  secondaryAction,
+  tone = "default",
 }: {
   icon?: React.ComponentType<{ className?: string }>;
   title: string;
   description?: string;
+  steps?: string[];
   action?: ReactNode;
+  secondaryAction?: ReactNode;
+  tone?: "default" | "quiet";
 }) {
   return (
-    <div className="grid place-items-center rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-      {Icon ? (
-        <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-secondary text-muted-foreground">
-          <Icon className="h-5 w-5" />
-        </span>
-      ) : null}
-      <p className="font-display text-sm font-bold">{title}</p>
-      {description ? (
-        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>
-      ) : null}
-      {action ? <div className="mt-4">{action}</div> : null}
+    <div
+      className={`relative overflow-hidden rounded-xl border border-dashed border-border px-6 py-12 text-center sm:py-14 ${
+        tone === "quiet" ? "bg-secondary/30" : "bg-card"
+      }`}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.55] [background-image:radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:18px_18px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
+      />
+      <div className="relative mx-auto grid max-w-md place-items-center">
+        <EmptyIllustration icon={Icon} />
+        <p className="mt-6 font-display text-lg font-bold tracking-tight">{title}</p>
+        {description ? (
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        ) : null}
+        {steps && steps.length > 0 ? (
+          <ol className="mt-6 w-full space-y-2.5 text-left">
+            {steps.map((step, i) => (
+              <li
+                key={step}
+                className="flex items-start gap-3 rounded-lg border border-border bg-background/70 px-3.5 py-2.5"
+              >
+                <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 text-sm text-muted-foreground">{step}</span>
+              </li>
+            ))}
+          </ol>
+        ) : null}
+        {action || secondaryAction ? (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {action}
+            {secondaryAction}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function EmptyIllustration({ icon: Icon }: { icon?: React.ComponentType<{ className?: string }> }) {
+  return (
+    <div className="relative grid h-24 w-32 place-items-center">
+      <span className="absolute left-1 top-3 h-14 w-20 -rotate-6 rounded-xl border border-border bg-background shadow-sm" />
+      <span className="absolute right-1 top-1 h-14 w-20 rotate-6 rounded-xl border border-border bg-background shadow-sm" />
+      <span className="absolute h-16 w-24 rounded-xl border border-border bg-card shadow-md" />
+      <span className="relative grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary ring-8 ring-card">
+        {Icon ? <Icon className="h-5 w-5" /> : <span className="h-2 w-2 rounded-full bg-primary" />}
+      </span>
     </div>
   );
 }
