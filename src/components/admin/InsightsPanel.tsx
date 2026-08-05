@@ -48,9 +48,10 @@ export function InsightsPanel() {
   const board = useQuery({
     queryKey: ["insight-board", hid],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_leaderboard", {
-        _hackathon_id: hid || null,
-      });
+      const { data, error } = await supabase.rpc(
+        "get_leaderboard",
+        hid ? { _hackathon_id: hid } : {},
+      );
       if (error) throw new Error(error.message);
       return data ?? [];
     },
