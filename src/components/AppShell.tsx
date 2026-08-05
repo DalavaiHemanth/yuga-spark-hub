@@ -124,7 +124,11 @@ export function EmptyState({
   );
 }
 
-function EmptyIllustration({ icon: Icon }: { icon?: React.ComponentType<{ className?: string }> }) {
+function EmptyIllustration({
+  icon: Icon,
+}: {
+  icon?: React.ComponentType<{ className?: string }> | undefined;
+}) {
   return (
     <div className="relative grid h-24 w-32 place-items-center">
       <span className="absolute left-1 top-3 h-14 w-20 -rotate-6 rounded-xl border border-border bg-background shadow-sm" />
