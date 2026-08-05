@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { BookOpen, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const TITLE = "Playbook — Yuga Spark";
 const DESCRIPTION = "Curated hackathon resources, templates and guides from the Yuga Spark admins.";
@@ -44,11 +46,27 @@ function PlaybookPage() {
         description="Starter kits, slide templates, API lists and past winning decks — collected by the club."
       />
       {list.length === 0 ? (
-        <div className="surface mt-8 p-10 text-center">
-          <BookOpen className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            The playbook is empty. Admins will drop resources here soon.
-          </p>
+        <div className="mt-8">
+          <EmptyState
+            icon={BookOpen}
+            title="The playbook is still being written"
+            description="Admins curate starter kits, slide decks and API lists here. Nothing published yet."
+            steps={[
+              "Check the notice board for the resources admins share in the meantime.",
+              "Have a link worth sharing? Message an admin and it can be added here.",
+              "Meanwhile, browse upcoming hackathons and pick one to prepare for.",
+            ]}
+            action={
+              <Button asChild size="sm">
+                <Link to="/chat">Suggest a resource</Link>
+              </Button>
+            }
+            secondaryAction={
+              <Button asChild size="sm" variant="outline">
+                <Link to="/notices">Open notice board</Link>
+              </Button>
+            }
+          />
         </div>
       ) : (
         categories.map((cat) => (
