@@ -1,4 +1,4 @@
-import { auth, defineMcp, type AnyToolDefinition } from "@lovable.dev/mcp-js";
+import { auth, defineMcp, type ToolDefinition } from "@lovable.dev/mcp-js";
 import listHackathons from "./tools/list-hackathons";
 import myRegistrations from "./tools/my-registrations";
 import registerForHackathon from "./tools/register-for-hackathon";
@@ -31,5 +31,5 @@ export default defineMcp({
     listResources,
     messageAdmin,
     myProfile,
-  ] as unknown as AnyToolDefinition[],
+  ] as unknown as ToolDefinition<never, never>[],
 });
