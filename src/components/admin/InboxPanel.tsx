@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Send } from "lucide-react";
+import { Send, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,15 @@ export function InboxPanel() {
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
       <div className="surface h-fit overflow-hidden">
         {threads.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">No student messages yet.</p>
+          <div className="p-5 text-center">
+            <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
+              <Inbox className="h-4 w-4" />
+            </span>
+            <p className="mt-3 font-display text-sm font-bold">Inbox is clear</p>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Student doubts land here. Post a notice inviting questions to get the first one.
+            </p>
+          </div>
         ) : (
           threads.map((t) => (
             <button

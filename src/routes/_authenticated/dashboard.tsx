@@ -178,8 +178,26 @@ function Dashboard() {
             <p className="label-mono text-muted-foreground">Next hackathon</p>
             <h2 className="mt-2 font-display text-2xl font-bold">Nothing on the calendar yet</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              The club leads will post the next build night here.
+              {isAdmin
+                ? "Create the club's next build night so members can register."
+                : "The club leads will post the next build night here. Get ready in the meantime."}
             </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {isAdmin ? (
+                <Button asChild size="sm">
+                  <Link to="/admin">Create a hackathon</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="sm">
+                    <Link to="/playbook">Open the playbook</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/notices">Notice board</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </section>
         )}
       </div>
@@ -215,8 +233,41 @@ function Dashboard() {
           <div className="mt-4">
             <EmptyState
               icon={CalendarDays}
-              title="Nothing scheduled yet"
-              description="Admins will post the next build night here."
+              title="No hackathons scheduled yet"
+              description={
+                isAdmin
+                  ? "Publish an event and it shows up here for every member instantly."
+                  : "As soon as admins publish an event, you can register right from this page."
+              }
+              steps={
+                isAdmin
+                  ? [
+                      "Open the console and add a hackathon with date, venue and team size.",
+                      "Import or add members so they can register.",
+                      "Post an announcement on the notice board to drive sign-ups.",
+                    ]
+                  : [
+                      "Complete your profile so registration is one click when an event drops.",
+                      "Browse the playbook to sharpen your stack before the next build night.",
+                      "Watch the notice board for outside-college hackathons too.",
+                    ]
+              }
+              action={
+                isAdmin ? (
+                  <Button asChild size="sm">
+                    <Link to="/admin">Create a hackathon</Link>
+                  </Button>
+                ) : (
+                  <Button asChild size="sm">
+                    <Link to="/playbook">Open the playbook</Link>
+                  </Button>
+                )
+              }
+              secondaryAction={
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/notices">Notice board</Link>
+                </Button>
+              }
             />
           </div>
         ) : (

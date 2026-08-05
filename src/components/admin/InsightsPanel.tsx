@@ -103,8 +103,11 @@ export function InsightsPanel() {
             </li>
           ))}
           {(board.data ?? []).length === 0 ? (
-            <li className="px-5 py-6 text-sm text-muted-foreground">
-              No results recorded yet — award points in the Results tab.
+            <li className="px-5 py-7 text-center">
+              <p className="font-display text-sm font-bold">No results recorded yet</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Open the Results tab, mark attendance and award points — top performers appear here.
+              </p>
             </li>
           ) : null}
         </ul>
@@ -130,7 +133,12 @@ export function InsightsPanel() {
             </li>
           ))}
           {(hackathons.data ?? []).length === 0 ? (
-            <li className="px-5 py-6 text-sm text-muted-foreground">No hackathons yet.</li>
+            <li className="px-5 py-7 text-center">
+              <p className="font-display text-sm font-bold">No hackathons yet</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Create one in the Hackathons tab to start tracking turnout.
+              </p>
+            </li>
           ) : null}
         </ul>
       </div>
