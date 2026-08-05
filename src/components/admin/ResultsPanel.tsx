@@ -144,8 +144,8 @@ export function ResultsPanel() {
           {(members.data ?? []).map((m) => {
             const row = rowFor(m.id);
             return (
-              <div key={m.id} className="flex flex-wrap items-center gap-3 p-4">
-                <div className="min-w-[200px] flex-1">
+              <div key={m.id} className="flex flex-wrap items-center gap-3 p-3 sm:p-4">
+                <div className="w-full min-w-0 sm:w-auto sm:min-w-[200px] sm:flex-1">
                   <p className="text-sm font-medium">{m.full_name ?? m.email}</p>
                   <p className="text-xs text-muted-foreground">{m.email}</p>
                 </div>

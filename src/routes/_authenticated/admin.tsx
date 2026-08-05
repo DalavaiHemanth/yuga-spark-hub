@@ -268,13 +268,13 @@ function AdminWorkspace() {
 
   return (
     <>
-    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <AdminSearch onPick={handlePick} />
-      <p className="text-xs text-muted-foreground">
+      <p className="hidden text-xs text-muted-foreground sm:block">
         Find any student by name, registration number or email — or jump straight to a hackathon.
       </p>
     </div>
-    <div className="mt-4 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
+    <div className="mt-4 grid gap-4 lg:grid-cols-[236px_minmax(0,1fr)] lg:gap-6 lg:items-start">
       <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
         {groups.map((group) => (
           <div key={group.group} className="mb-2 last:mb-0">
@@ -305,39 +305,53 @@ function AdminWorkspace() {
         ))}
       </nav>
 
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
-        {allItems.map((item) => {
-          const ItemIcon = item.icon;
-          const isActive = item.key === current.key;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setActive(item.key)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              <ItemIcon className="h-3.5 w-3.5" />
-              {item.label}
-            </button>
-          );
-        })}
+      <div className="sticky top-14 z-20 -mx-4 border-y border-border bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
+        <div className="-mx-1 flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {groups.map((group) => (
+            <div key={group.group} className="flex shrink-0 items-center gap-1.5">
+              <span className="label-mono shrink-0 pl-1 pr-0.5 text-[10px] text-muted-foreground">
+                {group.group}
+              </span>
+              {group.items.map((item) => {
+                const ItemIcon = item.icon;
+                const isActive = item.key === current.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setActive(item.key)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`inline-flex min-h-9 shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    <ItemIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
       <section className="min-w-0">
-        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border bg-card px-5 py-4">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-            <Icon className="h-5 w-5" />
+        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 sm:px-5 sm:py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary sm:h-10 sm:w-10">
+            <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate font-display text-lg font-bold tracking-tight">{current.title}</h2>
-            <p className="truncate text-sm text-muted-foreground">{current.description}</p>
+            <h2 className="truncate font-display text-base font-bold tracking-tight sm:text-lg">
+              {current.title}
+            </h2>
+            <p className="line-clamp-2 text-xs text-muted-foreground sm:truncate sm:text-sm">
+              {current.description}
+            </p>
           </div>
         </header>
-        <div key={`${current.key}-${query ?? ""}`} className="rise mt-5">
+        <div key={`${current.key}-${query ?? ""}`} className="rise mt-4 sm:mt-5">
           {current.render(query)}
         </div>
       </section>
@@ -542,7 +556,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
       </div>
 
       <div className="surface overflow-hidden">
-        <div className="space-y-3 border-b border-border bg-secondary/30 px-5 py-4">
+        <div className="space-y-3 border-b border-border bg-secondary/30 px-4 py-4 sm:px-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-sm font-bold">Members</h2>
             <Badge variant="secondary" className="font-mono text-[11px]">
@@ -555,13 +569,13 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             placeholder="Search name, email, roll number, year…"
             onChange={(e) => setQ(e.target.value)}
           />
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <div className="-mx-0.5 flex overflow-x-auto rounded-lg border border-border bg-background p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {(["all", "complete", "pending", "inactive"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                  className={`flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium capitalize transition-colors ${
                     filter === f
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -571,7 +585,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
                 </button>
               ))}
             </div>
-            <div className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-1 text-xs text-muted-foreground sm:ml-auto">
               <span>Sort</span>
               {(["recent", "name", "year"] as const).map((s) => (
                 <button
@@ -587,7 +601,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             </div>
           </div>
         </div>
-        <ul className="max-h-[720px] divide-y divide-border overflow-y-auto">
+        <ul className="max-h-[560px] divide-y divide-border overflow-y-auto sm:max-h-[720px]">
           {visible.map((m) => (
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
@@ -635,8 +649,8 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
     .toUpperCase();
 
   return (
-    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             {initials}
@@ -668,7 +682,7 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 gap-1">
+        <div className="flex shrink-0 flex-wrap gap-1">
           <Button
             size="sm"
             variant="ghost"
@@ -833,7 +847,7 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form onSubmit={create} className="surface space-y-4 p-6 lg:sticky lg:top-20 lg:self-start">
+      <form onSubmit={create} className="surface space-y-4 p-4 sm:p-6 lg:sticky lg:top-20 lg:self-start">
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
             <CalendarPlus className="h-4 w-4" />
@@ -960,7 +974,7 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
       </form>
 
       <div className="surface overflow-hidden">
-        <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-secondary/30 px-4 py-3.5 sm:px-5">
           <h2 className="font-display text-sm font-bold">
             {initialQuery ? `Matching “${initialQuery}”` : "All hackathons"}
           </h2>
@@ -1053,8 +1067,8 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
   }
 
   return (
-    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{h.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -1075,7 +1089,7 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
             </Badge>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Reg</span>
           <Switch
             checked={h.registration_open}
@@ -1182,15 +1196,15 @@ function AccessPanelInner() {
   const open = setting.data === "open";
 
   return (
-    <div className="surface max-w-xl space-y-4 p-6">
+    <div className="surface max-w-xl space-y-4 p-4 sm:p-6">
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
           <Lock className="h-4 w-4" />
         </span>
         <h2 className="font-display text-sm font-bold">Who can join the club portal</h2>
       </div>
-      <div className="flex items-center justify-between gap-6 rounded-lg border border-border bg-secondary/40 p-4">
-        <div>
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-secondary/40 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-medium">
             {open ? "Open to any email" : "Invite-only"}
             <Badge variant={open ? "secondary" : "default"} className="text-[10px]">

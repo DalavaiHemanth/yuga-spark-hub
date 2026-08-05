@@ -101,7 +101,7 @@ export function InboxPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-      <div className="surface h-fit overflow-hidden">
+      <div className="surface h-fit max-h-64 overflow-y-auto lg:max-h-none lg:overflow-hidden">
         <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-4 py-3">
           <h3 className="font-display text-sm font-bold">Threads</h3>
           <div className="flex items-center gap-2">
@@ -159,8 +159,8 @@ export function InboxPanel() {
         )}
       </div>
 
-      <div className="surface flex h-[520px] flex-col overflow-hidden">
-        <div className="flex items-center justify-between gap-3 border-b border-border bg-secondary/30 px-5 py-3">
+      <div className="surface flex h-[440px] flex-col overflow-hidden sm:h-[520px]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary/30 px-4 py-3 sm:px-5">
           <h3 className="font-display text-sm font-bold">
             {current ? nameOf(current) : "No conversation selected"}
           </h3>
@@ -171,7 +171,7 @@ export function InboxPanel() {
             </span>
           ) : null}
         </div>
-        <div className="flex-1 space-y-3 overflow-y-auto p-5">
+        <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
           {current
             ? list
                 .filter((m) => m.student_id === current)

@@ -94,7 +94,7 @@ export function MailPanel() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
       <div className="surface">
-        <div className="space-y-3 border-b border-border px-5 py-4">
+        <div className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
           <h2 className="label-mono text-muted-foreground">Audience</h2>
           <div className="flex flex-wrap gap-2">
             {(["all", "complete", "pending", "hackathon"] as const).map((a) => (
@@ -149,7 +149,7 @@ export function MailPanel() {
         </div>
         <ul className="max-h-[420px] divide-y divide-border overflow-y-auto">
           {visible.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 px-5 py-3">
+            <li key={m.id} className="flex items-center gap-3 px-4 py-3 sm:px-5">
               <Checkbox
                 checked={Boolean(picked[m.id])}
                 onCheckedChange={(v) => setPicked({ ...picked, [m.id]: Boolean(v) })}
@@ -168,7 +168,7 @@ export function MailPanel() {
         </ul>
       </div>
 
-      <div className="space-y-4 surface p-6">
+      <div className="space-y-4 surface p-4 sm:p-6">
         <h2 className="label-mono text-muted-foreground">Compose</h2>
         <p className="text-xs text-muted-foreground">
           Opens your mail app with everyone on BCC — send individually by picking one member, or in
