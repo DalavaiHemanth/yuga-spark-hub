@@ -87,7 +87,7 @@ export const adminCreateStudents = createServerFn({ method: "POST" })
     await supabaseAdmin.rpc("write_audit", {
       _action: "invite",
       _entity: "student",
-      _entity_id: null,
+      _entity_id: "",
       _summary: `Invited ${data.emails.length} student account(s) — ${created} created, ${existed} already existed`,
       _details: { emails: data.emails, created, existed, failed },
       _actor: context.userId,
