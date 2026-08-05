@@ -337,11 +337,12 @@ function AdminWorkspace() {
             <p className="truncate text-sm text-muted-foreground">{current.description}</p>
           </div>
         </header>
-        <div key={current.key} className="rise mt-5">
-          {current.render()}
+        <div key={`${current.key}-${query ?? ""}`} className="rise mt-5">
+          {current.render(query)}
         </div>
       </section>
     </div>
+    </>
   );
 }
 
