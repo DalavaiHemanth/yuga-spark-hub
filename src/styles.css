@@ -106,7 +106,11 @@
   --sidebar-ring: oklch(0.58 0.18 38);
 
   --gradient-spark: linear-gradient(120deg, var(--primary), var(--primary-glow));
-  --gradient-paper: radial-gradient(1200px 500px at 12% -10%, oklch(0.93 0.05 62 / 0.55), transparent 60%), radial-gradient(900px 420px at 95% 0%, oklch(0.9 0.05 200 / 0.35), transparent 55%);
+  --gradient-paper:
+    radial-gradient(1100px 520px at 8% -12%, oklch(0.9 0.09 58 / 0.5), transparent 62%),
+    radial-gradient(900px 460px at 98% -4%, oklch(0.9 0.07 205 / 0.35), transparent 58%),
+    radial-gradient(700px 420px at 50% 108%, oklch(0.92 0.05 40 / 0.35), transparent 60%);
+  --gradient-ink: linear-gradient(150deg, oklch(0.26 0.03 48), oklch(0.19 0.02 55));
   --shadow-spark: 0 1px 2px oklch(0.3 0.05 50 / 0.05), 0 18px 40px -28px oklch(0.35 0.09 45 / 0.45);
   --shadow-lift: 0 2px 4px oklch(0.3 0.05 50 / 0.06), 0 26px 50px -30px oklch(0.35 0.09 45 / 0.55);
   --grid-line: transparent;
