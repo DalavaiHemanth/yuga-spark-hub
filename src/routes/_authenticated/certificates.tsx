@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { Award, Download, FileDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { downloadCertificate } from "@/lib/certificate";
@@ -60,11 +61,27 @@ function CertificatesPage() {
         description="Every hackathon you attended earns a certificate — winner certificates for podium finishes."
       />
       {list.length === 0 ? (
-        <div className="surface mt-8 p-10 text-center">
-          <Award className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            No certificates yet. They unlock once admins mark you as attended.
-          </p>
+        <div className="mt-8">
+          <EmptyState
+            icon={Award}
+            title="No certificates unlocked yet"
+            description="Certificates appear automatically once an admin marks you present at a hackathon."
+            steps={[
+              "Register for an upcoming hackathon from the dashboard.",
+              "Form or join a squad so your team is on the attendance list.",
+              "Attend the event — your certificate lands here right after results are posted.",
+            ]}
+            action={
+              <Button asChild size="sm">
+                <Link to="/dashboard">Browse hackathons</Link>
+              </Button>
+            }
+            secondaryAction={
+              <Button asChild size="sm" variant="outline">
+                <Link to="/squads">Find a squad</Link>
+              </Button>
+            }
+          />
         </div>
       ) : (
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
