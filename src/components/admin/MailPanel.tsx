@@ -248,8 +248,27 @@ export function MailPanel() {
         <div className="space-y-2">
           <Label htmlFor="body">Message</Label>
           <Textarea id="body" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
+          <p className="text-xs text-muted-foreground">
+            Use <code>{"{{name}}"}</code> or <code>{"{{first_name}}"}</code> to personalise each email.
+          </p>
         </div>
         <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={sendNow} disabled={sending || !fromAddress}>
+              {sending ? "Sending…" : `Send now (${recipients.length})`}
+            </Button>
+            {fromAddress ? (
+              <span className="text-xs text-muted-foreground">from {fromAddress}</span>
+            ) : (
+              <span className="text-xs text-destructive">
+                Add a verified sender below before sending.
+              </span>
+            )}
+          </div>
+          <SenderSettings />
+          <p className="text-xs text-muted-foreground">
+            Prefer your own mail app? Use the batch links below instead.
+          </p>
           <div className="flex flex-wrap gap-2">
             {batches.length <= 1 ? (
               <Button onClick={() => openBatch(0)}>Open mail app ({recipients.length})</Button>
