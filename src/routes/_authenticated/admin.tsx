@@ -11,6 +11,8 @@ import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
 import { InboxPanel } from "@/components/admin/InboxPanel";
+import { MailPanel } from "@/components/admin/MailPanel";
+import { InsightsPanel } from "@/components/admin/InsightsPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,13 +63,15 @@ function AdminPage() {
       <PageHeader
         eyebrow="Club operations"
         title="Admin console"
-        description="Members, hackathons, results, certificates, playbook, notices and the student inbox."
+        description="Members, mail, hackathons, results, insights, playbook, notices and the student inbox."
       />
       <Tabs defaultValue="members" className="mt-8">
         <TabsList className="flex flex-wrap">
           <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="mail">Mail</TabsTrigger>
           <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
           <TabsTrigger value="results">Results</TabsTrigger>
+          <TabsTrigger value="insights">Insights</TabsTrigger>
           <TabsTrigger value="playbook">Playbook</TabsTrigger>
           <TabsTrigger value="notices">Notices</TabsTrigger>
           <TabsTrigger value="inbox">Inbox</TabsTrigger>
@@ -76,11 +80,17 @@ function AdminPage() {
         <TabsContent value="members" className="mt-6">
           <MembersPanel />
         </TabsContent>
+        <TabsContent value="mail" className="mt-6">
+          <MailPanel />
+        </TabsContent>
         <TabsContent value="hackathons" className="mt-6">
           <HackathonsPanel />
         </TabsContent>
         <TabsContent value="results" className="mt-6">
           <ResultsPanel />
+        </TabsContent>
+        <TabsContent value="insights" className="mt-6">
+          <InsightsPanel />
         </TabsContent>
         <TabsContent value="playbook" className="mt-6">
           <ResourcesPanel />
