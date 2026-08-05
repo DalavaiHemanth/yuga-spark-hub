@@ -227,41 +227,27 @@ function MembersPanel({ initialQuery }: { initialQuery?: string | undefined }) {
 }
 
 function AdminOverview() {
-  const { isOwner } = useAuth();
   const stats = useQuery({
-    queryKey: ["admin-overview", isOwner],
+    queryKey: ["admin-overview"],
     queryFn: async () => {
-      const [members, hackathons, registrations, messages] = await Promise.all([
+      const [members, registrations] = await Promise.all([
         supabase.from("profiles").select("id,profile_completed,is_active"),
-        supabase.from("hackathons").select("id,event_date,registration_open"),
         supabase.from("registrations").select("id"),
-        isOwner
-          ? supabase.from("messages").select("id,from_admin")
-          : Promise.resolve({ data: [] as { id: string; from_admin: boolean }[] }),
       ]);
       const profiles = members.data ?? [];
-      const events = hackathons.data ?? [];
-      const today = new Date().toISOString().slice(0, 10);
       return {
         members: profiles.length,
         pending: profiles.filter((p) => !p.profile_completed).length,
-        upcoming: events.filter((e) => e.event_date >= today).length,
         registrations: registrations.data?.length ?? 0,
-        questions: (messages.data ?? []).filter((m) => !m.from_admin).length,
       };
     },
   });
 
   const s = stats.data;
   return (
-    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-8 grid gap-3 sm:grid-cols-2">
       <StatCard label="Members" value={s?.members ?? "—"} hint={`${s?.pending ?? 0} profiles pending`} />
       <StatCard label="Registrations" value={s?.registrations ?? "—"} hint="Across all events" />
-      {isOwner ? (
-        <StatCard label="Student questions" value={s?.questions ?? "—"} hint="Messages in the inbox" />
-      ) : (
-        <StatCard label="Your access" value="Co-admin" hint="Inbox, mail and access are owner-only" />
-      )}
     </div>
   );
 }
