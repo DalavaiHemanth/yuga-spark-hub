@@ -69,7 +69,7 @@ export const sendClubEmail = createServerFn({ method: "POST" })
         subject: data.subject,
         body: data.body.slice(0, 4000),
         kind: data.kind ?? "broadcast",
-        hackathon_id: data.hackathonId,
+        hackathon_id: data.hackathonId ?? null,
         status: o.status,
         error: o.error,
         provider_id: o.providerId,
