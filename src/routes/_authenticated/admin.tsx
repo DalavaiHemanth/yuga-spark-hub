@@ -556,7 +556,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
       </div>
 
       <div className="surface overflow-hidden">
-        <div className="space-y-3 border-b border-border bg-secondary/30 px-5 py-4">
+        <div className="space-y-3 border-b border-border bg-secondary/30 px-4 py-4 sm:px-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-sm font-bold">Members</h2>
             <Badge variant="secondary" className="font-mono text-[11px]">
@@ -569,13 +569,13 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             placeholder="Search name, email, roll number, year…"
             onChange={(e) => setQ(e.target.value)}
           />
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <div className="-mx-0.5 flex overflow-x-auto rounded-lg border border-border bg-background p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {(["all", "complete", "pending", "inactive"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                  className={`flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium capitalize transition-colors ${
                     filter === f
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -585,7 +585,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
                 </button>
               ))}
             </div>
-            <div className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-1 text-xs text-muted-foreground sm:ml-auto">
               <span>Sort</span>
               {(["recent", "name", "year"] as const).map((s) => (
                 <button
@@ -601,7 +601,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             </div>
           </div>
         </div>
-        <ul className="max-h-[720px] divide-y divide-border overflow-y-auto">
+        <ul className="max-h-[560px] divide-y divide-border overflow-y-auto sm:max-h-[720px]">
           {visible.map((m) => (
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
