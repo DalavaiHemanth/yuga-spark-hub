@@ -20,6 +20,7 @@ type AuthState = {
   user: User | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isOwner: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -30,20 +31,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async (uid: string | undefined) => {
     if (!uid) {
       setProfile(null);
       setIsAdmin(false);
+      setIsOwner(false);
       return;
     }
-    const [{ data: p }, { data: roles }] = await Promise.all([
+    const [{ data: p }, { data: roles }, { data: owner }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.rpc("is_owner", { _user_id: uid }),
     ]);
     setProfile((p as Profile) ?? null);
     setIsAdmin(Boolean(roles?.some((r) => r.role === "admin")));
+    setIsOwner(Boolean(owner));
   };
 
   useEffect(() => {
@@ -71,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: session?.user ?? null,
     profile,
     isAdmin,
+    isOwner,
     refresh: async () => {
       await load(session?.user?.id);
     },
@@ -78,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setProfile(null);
       setIsAdmin(false);
+      setIsOwner(false);
     },
   };
 
