@@ -608,40 +608,7 @@ function HackathonsPanel() {
         </div>
         <ul className="divide-y divide-border">
           {(hackathons.data ?? []).map((h) => (
-            <li key={h.id} className="flex items-center justify-between gap-3 px-5 py-4">
-              <div>
-                <p className="text-sm font-medium">{h.title}</p>
-                <p className="label-mono text-muted-foreground">
-                  {new Date(h.event_date).toLocaleDateString()} · teams {h.team_min}–{h.team_max}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="label-mono text-muted-foreground">Reg</span>
-                <Switch
-                  checked={h.registration_open}
-                  onCheckedChange={async (v) => {
-                    const { error } = await supabase
-                      .from("hackathons")
-                      .update({ registration_open: v })
-                      .eq("id", h.id);
-                    if (error) toast.error(error.message);
-                    else await hackathons.refetch();
-                  }}
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={async () => {
-                    if (!confirm(`Delete "${h.title}"?`)) return;
-                    const { error } = await supabase.from("hackathons").delete().eq("id", h.id);
-                    if (error) toast.error(error.message);
-                    else await hackathons.refetch();
-                  }}
-                >
-                  Delete
-                </Button>
-              </div>
-            </li>
+            <HackathonRow key={h.id} hackathon={h} onChanged={() => hackathons.refetch()} />
           ))}
           {hackathons.data?.length === 0 ? (
             <li className="px-5 py-6 text-sm text-muted-foreground">No hackathons yet.</li>
@@ -653,6 +620,162 @@ function HackathonsPanel() {
 }
 
 function AccessPanel() {
+  return <AccessPanelInner />;
+}
+
+type HackathonRowProps = {
+  hackathon: {
+    id: string;
+    title: string;
+    event_date: string;
+    start_time: string | null;
+    end_time: string | null;
+    venue: string | null;
+    team_min: number;
+    team_max: number;
+    mode: string;
+    registration_open: boolean;
+  };
+  onChanged: () => void;
+};
+
+function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
+  const [edit, setEdit] = useState(false);
+  const [draft, setDraft] = useState({
+    title: h.title,
+    event_date: h.event_date,
+    start_time: h.start_time ?? "",
+    end_time: h.end_time ?? "",
+    venue: h.venue ?? "",
+    team_min: h.team_min,
+    team_max: h.team_max,
+    mode: h.mode,
+  });
+
+  async function save() {
+    if (draft.team_min > draft.team_max) {
+      toast.error("Minimum team size cannot exceed the maximum");
+      return;
+    }
+    const { error } = await supabase
+      .from("hackathons")
+      .update({
+        title: draft.title.trim(),
+        event_date: draft.event_date,
+        start_time: draft.start_time || null,
+        end_time: draft.end_time || null,
+        venue: draft.venue.trim() || null,
+        team_min: Number(draft.team_min),
+        team_max: Number(draft.team_max),
+        mode: draft.mode,
+      })
+      .eq("id", h.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Hackathon updated");
+      setEdit(false);
+      onChanged();
+    }
+  }
+
+  return (
+    <li className="px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium">{h.title}</p>
+          <p className="label-mono text-muted-foreground">
+            {new Date(h.event_date).toLocaleDateString()} · teams {h.team_min}–{h.team_max} ·{" "}
+            {h.mode}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="label-mono text-muted-foreground">Reg</span>
+          <Switch
+            checked={h.registration_open}
+            onCheckedChange={async (v) => {
+              const { error } = await supabase
+                .from("hackathons")
+                .update({ registration_open: v })
+                .eq("id", h.id);
+              if (error) toast.error(error.message);
+              else onChanged();
+            }}
+          />
+          <Button size="sm" variant="secondary" onClick={() => setEdit((v) => !v)}>
+            {edit ? "Cancel" : "Edit"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={async () => {
+              if (!confirm(`Delete "${h.title}"?`)) return;
+              const { error } = await supabase.from("hackathons").delete().eq("id", h.id);
+              if (error) toast.error(error.message);
+              else onChanged();
+            }}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+      {edit ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Input
+            value={draft.title}
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            placeholder="Title"
+          />
+          <Input
+            type="date"
+            value={draft.event_date}
+            onChange={(e) => setDraft({ ...draft, event_date: e.target.value })}
+          />
+          <Input
+            type="time"
+            value={draft.start_time}
+            onChange={(e) => setDraft({ ...draft, start_time: e.target.value })}
+          />
+          <Input
+            type="time"
+            value={draft.end_time}
+            onChange={(e) => setDraft({ ...draft, end_time: e.target.value })}
+          />
+          <Input
+            value={draft.venue}
+            placeholder="Venue"
+            onChange={(e) => setDraft({ ...draft, venue: e.target.value })}
+          />
+          <select
+            value={draft.mode}
+            onChange={(e) => setDraft({ ...draft, mode: e.target.value })}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="offline">Offline</option>
+            <option value="online">Online</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+          <Input
+            type="number"
+            min={1}
+            value={draft.team_min}
+            onChange={(e) => setDraft({ ...draft, team_min: Number(e.target.value) })}
+          />
+          <Input
+            type="number"
+            min={1}
+            value={draft.team_max}
+            onChange={(e) => setDraft({ ...draft, team_max: Number(e.target.value) })}
+          />
+          <Button size="sm" onClick={save}>
+            Save changes
+          </Button>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+function AccessPanelInner() {
   const setting = useQuery({
     queryKey: ["access-mode"],
     queryFn: async () => {
