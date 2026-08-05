@@ -330,8 +330,8 @@ function AdminWorkspace() {
   );
 }
 
-function MembersPanel() {
-  return <MembersPanelInner />;
+function MembersPanel({ initialQuery }: { initialQuery?: string }) {
+  return <MembersPanelInner initialQuery={initialQuery} />;
 }
 
 function AdminOverview() {
@@ -375,12 +375,19 @@ function AdminOverview() {
   );
 }
 
-function MembersPanelInner() {
+function MembersPanelInner({ initialQuery }: { initialQuery?: string }) {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery ?? "");
   const [filter, setFilter] = useState<"all" | "complete" | "pending" | "inactive">("all");
   const [sort, setSort] = useState<"recent" | "name" | "year">("recent");
+
+  useEffect(() => {
+    if (initialQuery) {
+      setQ(initialQuery);
+      setFilter("all");
+    }
+  }, [initialQuery]);
 
   const members = useQuery({
     queryKey: ["all-profiles"],
@@ -727,7 +734,7 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
   );
 }
 
-function HackathonsPanel() {
+function HackathonsPanel({ initialQuery }: { initialQuery?: string }) {
   const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
