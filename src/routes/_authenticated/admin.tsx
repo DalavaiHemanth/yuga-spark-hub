@@ -649,8 +649,8 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
     .toUpperCase();
 
   return (
-    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             {initials}
@@ -682,7 +682,7 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 gap-1">
+        <div className="flex shrink-0 flex-wrap gap-1">
           <Button
             size="sm"
             variant="ghost"
