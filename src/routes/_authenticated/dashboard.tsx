@@ -213,6 +213,14 @@ function Dashboard() {
               const registered = registrations.data?.includes(h.id) ?? false;
               return (
                 <article key={h.id} className="surface lift flex flex-col p-6">
+                  {h.banner_url ? (
+                    <img
+                      src={h.banner_url}
+                      alt={`${h.title} banner`}
+                      loading="lazy"
+                      className="mb-4 h-32 w-full rounded-lg object-cover"
+                    />
+                  ) : null}
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-display text-xl font-bold">{h.title}</h3>
                     <Badge variant="secondary" className="shrink-0 font-mono text-[11px]">
