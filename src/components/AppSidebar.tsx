@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Trophy,
@@ -9,10 +9,10 @@ import {
   MessageSquare,
   QrCode,
   UserCog,
-  Shield,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { ADMIN_NAV } from "@/lib/admin-nav";
 import { SparkMark } from "@/components/SparkMark";
 import {
   Sidebar,
@@ -45,9 +45,13 @@ const RESOURCES = [
 type Item = { to: string; label: string; icon: typeof Trophy };
 
 export function AppSidebar() {
-  const { profile, isAdmin, signOut } = useAuth();
+  const { profile, isAdmin, isOwner, signOut } = useAuth();
   const { state, isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
+  const location = useRouterState({ select: (r) => r.location });
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const activeSection =
+    (location.search as { section?: string }).section ?? (isAdminRoute ? "members" : undefined);
   const collapsed = state === "collapsed" && !isMobile;
 
   const close = () => isMobile && setOpenMobile(false);
@@ -78,34 +82,62 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="px-3 py-4">
-        <Link to="/dashboard" onClick={close}>
+        <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={close}>
           <SparkMark compact={collapsed} />
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Club</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{CLUB.map(renderItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Resources</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{RESOURCES.map(renderItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
         {isAdmin ? (
-          <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>{renderItem({ to: "/admin", label: "Console", icon: Shield })}</SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ) : null}
+          ADMIN_NAV.map((group) => {
+            const items = group.items.filter((i) => isOwner || !i.ownerOnly);
+            if (items.length === 0) return null;
+            return (
+              <SidebarGroup key={group.group}>
+                <SidebarGroupLabel>{group.group}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {items.map((item) => (
+                      <SidebarMenuItem key={item.key}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.label}
+                          isActive={isAdminRoute && activeSection === item.key}
+                        >
+                          <Link
+                            to="/admin"
+                            search={{ section: item.key }}
+                            onClick={close}
+                            className="flex items-center gap-2.5"
+                          >
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })
+        ) : (
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel>Club</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>{CLUB.map(renderItem)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Resources</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>{RESOURCES.map(renderItem)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
