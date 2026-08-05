@@ -110,11 +110,27 @@ function LeaderboardPage() {
         {rows.isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Loading standings…</p>
         ) : list.length === 0 ? (
-          <div className="p-10 text-center">
-            <Flame className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              No results published yet. Rankings appear once admins post hackathon results.
-            </p>
+          <div className="p-5">
+            <EmptyState
+              icon={Flame}
+              title="No standings published yet"
+              description="The leaderboard fills up as soon as admins post results for the first hackathon."
+              steps={[
+                "Register for an upcoming hackathon to get on the board.",
+                "Points are awarded for attendance, and bonus points for podium finishes.",
+                "Come back after the event — rankings update the moment results are posted.",
+              ]}
+              action={
+                <Button asChild size="sm">
+                  <Link to="/dashboard">See upcoming hackathons</Link>
+                </Button>
+              }
+              secondaryAction={
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/squads">Build your squad</Link>
+                </Button>
+              }
+            />
           </div>
         ) : (
           <table className="w-full text-sm">
