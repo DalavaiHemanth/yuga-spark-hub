@@ -847,7 +847,7 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form onSubmit={create} className="surface space-y-4 p-6 lg:sticky lg:top-20 lg:self-start">
+      <form onSubmit={create} className="surface space-y-4 p-4 sm:p-6 lg:sticky lg:top-20 lg:self-start">
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
             <CalendarPlus className="h-4 w-4" />
@@ -974,7 +974,7 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
       </form>
 
       <div className="surface overflow-hidden">
-        <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-secondary/30 px-4 py-3.5 sm:px-5">
           <h2 className="font-display text-sm font-bold">
             {initialQuery ? `Matching “${initialQuery}”` : "All hackathons"}
           </h2>
@@ -1067,8 +1067,8 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
   }
 
   return (
-    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{h.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -1089,7 +1089,7 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
             </Badge>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Reg</span>
           <Switch
             checked={h.registration_open}
@@ -1196,15 +1196,15 @@ function AccessPanelInner() {
   const open = setting.data === "open";
 
   return (
-    <div className="surface max-w-xl space-y-4 p-6">
+    <div className="surface max-w-xl space-y-4 p-4 sm:p-6">
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
           <Lock className="h-4 w-4" />
         </span>
         <h2 className="font-display text-sm font-bold">Who can join the club portal</h2>
       </div>
-      <div className="flex items-center justify-between gap-6 rounded-lg border border-border bg-secondary/40 p-4">
-        <div>
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-secondary/40 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-medium">
             {open ? "Open to any email" : "Invite-only"}
             <Badge variant={open ? "secondary" : "default"} className="text-[10px]">
