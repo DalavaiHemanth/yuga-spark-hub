@@ -6,7 +6,27 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { adminCreateStudents, adminDeleteUser, adminSetPassword } from "@/lib/club.functions";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState, StatCard } from "@/components/AppShell";
+import {
+  Users,
+  Mail,
+  CalendarPlus,
+  Trophy,
+  BarChart3,
+  BookOpen,
+  Megaphone,
+  Inbox,
+  Lock,
+  ShieldCheck,
+  KeyRound,
+  Trash2,
+  UserCheck,
+  UserX,
+  Pencil,
+  CalendarDays,
+  MapPin,
+  Upload,
+} from "lucide-react";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
@@ -19,6 +39,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -37,7 +59,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -50,10 +72,11 @@ function AdminPage() {
   if (!isAdmin) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold">Admins only</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          This console is restricted to Yuga Spark club admins.
-        </p>
+        <EmptyState
+          icon={Lock}
+          title="Admins only"
+          description="This console is restricted to Yuga Spark club admins. If you think this is a mistake, message an admin from the Ask admin page."
+        />
       </AppShell>
     );
   }
@@ -64,18 +87,38 @@ function AdminPage() {
         eyebrow="Club operations"
         title="Admin console"
         description="Members, mail, hackathons, results, insights, playbook, notices and the student inbox."
+        actions={
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            {profile?.full_name ?? profile?.email ?? "Admin"}
+          </span>
+        }
       />
+      <AdminOverview />
       <Tabs defaultValue="members" className="mt-8">
-        <TabsList className="flex flex-wrap">
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="mail">Mail</TabsTrigger>
-          <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
-          <TabsTrigger value="playbook">Playbook</TabsTrigger>
-          <TabsTrigger value="notices">Notices</TabsTrigger>
-          <TabsTrigger value="inbox">Inbox</TabsTrigger>
-          <TabsTrigger value="access">Access</TabsTrigger>
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-xl border border-border bg-card p-1.5">
+          {(
+            [
+              ["members", "Members", Users],
+              ["mail", "Mail", Mail],
+              ["hackathons", "Hackathons", CalendarPlus],
+              ["results", "Results", Trophy],
+              ["insights", "Insights", BarChart3],
+              ["playbook", "Playbook", BookOpen],
+              ["notices", "Notices", Megaphone],
+              ["inbox", "Inbox", Inbox],
+              ["access", "Access", Lock],
+            ] as const
+          ).map(([value, label, Icon]) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="gap-1.5 rounded-lg px-3 py-1.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <TabsContent value="members" className="mt-6">
           <MembersPanel />
