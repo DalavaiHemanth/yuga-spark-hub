@@ -105,6 +105,16 @@ export function MailPanel() {
       toast.error("Set a verified sender address first");
       return;
     }
+    const trimmedSubject = subject.trim();
+    const trimmedBody = body.trim();
+    if (trimmedSubject.length < 3 || trimmedSubject.length > 200) {
+      toast.error("Subject must be 3–200 characters");
+      return;
+    }
+    if (trimmedBody.length < 5 || trimmedBody.length > 20000) {
+      toast.error("Message must be 5–20000 characters");
+      return;
+    }
     if (targets.length === 0) {
       toast.error("No recipients");
       return;
@@ -112,7 +122,7 @@ export function MailPanel() {
     setSending(true);
     try {
       const result = await send({
-        data: { subject, body, kind, recipients: targets },
+        data: { subject: trimmedSubject, body: trimmedBody, kind, recipients: targets },
       });
       if (result.failed > 0) {
         toast.error(`${result.sent} sent, ${result.failed} failed. ${result.firstError ?? ""}`);
