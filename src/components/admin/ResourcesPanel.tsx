@@ -54,7 +54,7 @@ export function ResourcesPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-      <form onSubmit={add} className="surface h-fit space-y-3 p-6">
+      <form onSubmit={add} className="surface h-fit space-y-3 p-4 sm:p-6">
         <h3 className="font-display text-lg font-bold">Add resource</h3>
         <div>
           <Label>Title</Label>
