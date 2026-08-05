@@ -58,6 +58,12 @@ export function InboxPanel() {
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
       <div className="surface h-fit overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-4 py-3">
+          <h3 className="font-display text-sm font-bold">Threads</h3>
+          <span className="rounded-full bg-secondary px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+            {threads.length}
+          </span>
+        </div>
         {threads.length === 0 ? (
           <div className="p-5 text-center">
             <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
@@ -73,17 +79,25 @@ export function InboxPanel() {
             <button
               key={t}
               onClick={() => setActive(t)}
-              className={`block w-full border-b border-border px-4 py-3 text-left text-sm last:border-0 ${
-                current === t ? "bg-secondary font-medium" : "hover:bg-secondary/60"
+              className={`flex w-full items-center gap-2.5 border-b border-border px-4 py-3 text-left text-sm last:border-0 transition-colors ${
+                current === t ? "bg-primary/10 font-medium text-foreground" : "hover:bg-secondary/60"
               }`}
             >
-              {nameOf(t)}
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[10px] font-semibold text-primary">
+                {nameOf(t).slice(0, 2).toUpperCase()}
+              </span>
+              <span className="truncate">{nameOf(t)}</span>
             </button>
           ))
         )}
       </div>
 
       <div className="surface flex h-[520px] flex-col overflow-hidden">
+        <div className="border-b border-border bg-secondary/30 px-5 py-3">
+          <h3 className="font-display text-sm font-bold">
+            {current ? nameOf(current) : "No conversation selected"}
+          </h3>
+        </div>
         <div className="flex-1 space-y-3 overflow-y-auto p-5">
           {current
             ? list
