@@ -102,10 +102,10 @@ function ProfilePage() {
   return (
     <AppShell>
       <p className="label-mono text-primary">{isAdmin ? "Admin account" : "Member account"}</p>
-      <h1 className="mt-3 text-4xl font-bold">Profile</h1>
+      <h1 className="mt-3 text-4xl font-bold font-display">Profile</h1>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <form onSubmit={save} className="space-y-5 rounded-[4px] border border-border bg-card p-6">
+        <form onSubmit={save} className="space-y-5 surface p-6">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full name</Label>
             <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
@@ -174,7 +174,7 @@ function ProfilePage() {
         </form>
 
         <div className="space-y-6">
-          <div className="rounded-[4px] border border-border bg-card p-6">
+          <div className="surface p-6">
             <h2 className="label-mono text-muted-foreground">Photo</h2>
             <div className="mt-3 h-40 w-32 overflow-hidden rounded-[3px] border border-border bg-secondary">
               {photoUrl ? (
@@ -186,7 +186,7 @@ function ProfilePage() {
 
           <form
             onSubmit={changePassword}
-            className="space-y-4 rounded-[4px] border border-border bg-card p-6"
+            className="space-y-4 surface p-6"
           >
             <h2 className="label-mono text-muted-foreground">Change password</h2>
             <Input

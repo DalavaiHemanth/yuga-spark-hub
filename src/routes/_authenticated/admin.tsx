@@ -6,7 +6,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { adminCreateStudents, adminDeleteUser, adminSetPassword } from "@/lib/club.functions";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PageHeader } from "@/components/AppShell";
+import { ResultsPanel } from "@/components/admin/ResultsPanel";
+import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
+import { NoticesPanel } from "@/components/admin/NoticesPanel";
+import { InboxPanel } from "@/components/admin/InboxPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,12 +58,19 @@ function AdminPage() {
 
   return (
     <AppShell>
-      <p className="label-mono text-primary">Club operations</p>
-      <h1 className="mt-3 text-4xl font-bold">Admin console</h1>
+      <PageHeader
+        eyebrow="Club operations"
+        title="Admin console"
+        description="Members, hackathons, results, certificates, playbook, notices and the student inbox."
+      />
       <Tabs defaultValue="members" className="mt-8">
-        <TabsList>
+        <TabsList className="flex flex-wrap">
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
+          <TabsTrigger value="results">Results</TabsTrigger>
+          <TabsTrigger value="playbook">Playbook</TabsTrigger>
+          <TabsTrigger value="notices">Notices</TabsTrigger>
+          <TabsTrigger value="inbox">Inbox</TabsTrigger>
           <TabsTrigger value="access">Access</TabsTrigger>
         </TabsList>
         <TabsContent value="members" className="mt-6">
@@ -67,6 +78,18 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="hackathons" className="mt-6">
           <HackathonsPanel />
+        </TabsContent>
+        <TabsContent value="results" className="mt-6">
+          <ResultsPanel />
+        </TabsContent>
+        <TabsContent value="playbook" className="mt-6">
+          <ResourcesPanel />
+        </TabsContent>
+        <TabsContent value="notices" className="mt-6">
+          <NoticesPanel />
+        </TabsContent>
+        <TabsContent value="inbox" className="mt-6">
+          <InboxPanel />
         </TabsContent>
         <TabsContent value="access" className="mt-6">
           <AccessPanel />
@@ -145,7 +168,7 @@ function MembersPanel() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
       <div className="space-y-6">
-        <div className="space-y-3 rounded-[4px] border border-border bg-card p-6">
+        <div className="space-y-3 surface p-6">
           <h2 className="label-mono text-muted-foreground">Add members</h2>
           <p className="text-xs text-muted-foreground">
             One roll number or email per line. Bare roll numbers get {DOMAIN} appended. Default
@@ -165,7 +188,7 @@ function MembersPanel() {
           </Button>
         </div>
 
-        <div className="space-y-3 rounded-[4px] border border-border bg-card p-6">
+        <div className="space-y-3 surface p-6">
           <h2 className="label-mono text-muted-foreground">Bulk import from Excel</h2>
           <Label htmlFor="sheet" className="text-xs text-muted-foreground">
             Any .xlsx/.csv — only email-like cells are used.
@@ -183,7 +206,7 @@ function MembersPanel() {
         </div>
       </div>
 
-      <div className="rounded-[4px] border border-border bg-card">
+      <div className="surface">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="label-mono text-muted-foreground">
             Members ({members.data?.length ?? 0})
@@ -349,7 +372,7 @@ function HackathonsPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form onSubmit={create} className="space-y-4 rounded-[4px] border border-border bg-card p-6">
+      <form onSubmit={create} className="space-y-4 surface p-6">
         <h2 className="label-mono text-muted-foreground">New hackathon</h2>
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
@@ -436,7 +459,7 @@ function HackathonsPanel() {
         </Button>
       </form>
 
-      <div className="rounded-[4px] border border-border bg-card">
+      <div className="surface">
         <div className="border-b border-border px-5 py-3">
           <h2 className="label-mono text-muted-foreground">
             All hackathons ({hackathons.data?.length ?? 0})
@@ -505,7 +528,7 @@ function AccessPanel() {
   const open = setting.data === "open";
 
   return (
-    <div className="max-w-xl space-y-4 rounded-[4px] border border-border bg-card p-6">
+    <div className="max-w-xl space-y-4 surface p-6">
       <h2 className="label-mono text-muted-foreground">Who can join the club portal</h2>
       <div className="flex items-center justify-between gap-6">
         <div>
