@@ -5,7 +5,12 @@ import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { adminCreateStudents, adminDeleteUser, adminSetPassword } from "@/lib/club.functions";
+import {
+  adminCreateStudents,
+  adminDeleteUser,
+  adminSetPassword,
+  STUDENT_DEFAULT_PASSWORD,
+} from "@/lib/club.functions";
 import { AppShell, PageHeader, EmptyState, StatCard } from "@/components/AppShell";
 import {
   Users,
@@ -45,6 +50,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -406,11 +412,15 @@ function AdminOverview() {
 }
 
 function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined }) {
+  const { isOwner } = useAuth();
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState(initialQuery ?? "");
   const [filter, setFilter] = useState<"all" | "complete" | "pending" | "inactive">("all");
   const [sort, setSort] = useState<"recent" | "name" | "year">("recent");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkPwd, setBulkPwd] = useState(STUDENT_DEFAULT_PASSWORD);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   useEffect(() => {
     if (initialQuery) {
@@ -498,6 +508,79 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
     return rows;
   })();
 
+  const selectedRows = visible.filter((m) => selected.includes(m.id));
+  const allVisibleSelected = visible.length > 0 && selectedRows.length === visible.length;
+
+  function toggleOne(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+
+  function toggleAllVisible() {
+    setSelected(allVisibleSelected ? [] : visible.map((m) => m.id));
+  }
+
+  async function bulkSetActive(active: boolean) {
+    if (selectedRows.length === 0) return;
+    setBulkBusy(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_active: active })
+      .in("id", selectedRows.map((m) => m.id));
+    setBulkBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(
+        `${selectedRows.length} member${selectedRows.length > 1 ? "s" : ""} ${active ? "activated" : "deactivated"}`,
+      );
+      setSelected([]);
+      await members.refetch();
+    }
+  }
+
+  async function bulkGrantAccess() {
+    if (selectedRows.length === 0) return;
+    setBulkBusy(true);
+    const list = selectedRows.map((m) => m.email.toLowerCase());
+    const { data: existing } = await supabase
+      .from("allowed_emails")
+      .select("email")
+      .in("email", list);
+    const have = new Set((existing ?? []).map((r) => r.email.toLowerCase()));
+    const rows = list.filter((e) => !have.has(e)).map((email) => ({ email }));
+    if (rows.length === 0) {
+      setBulkBusy(false);
+      toast.info("All selected members already have access");
+      return;
+    }
+    const { error } = await supabase.from("allowed_emails").insert(rows);
+    setBulkBusy(false);
+    if (error) toast.error(error.message);
+    else toast.success(`Access granted to ${rows.length} email${rows.length > 1 ? "s" : ""}`);
+  }
+
+  async function bulkResetPasswords() {
+    if (selectedRows.length === 0) return;
+    if (bulkPwd.trim().length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (!confirm(`Reset the password for ${selectedRows.length} member(s)?`)) return;
+    setBulkBusy(true);
+    let ok = 0;
+    const failed: string[] = [];
+    for (const m of selectedRows) {
+      try {
+        await adminSetPassword({ data: { userId: m.id, password: bulkPwd.trim() } });
+        ok += 1;
+      } catch {
+        failed.push(m.email);
+      }
+    }
+    setBulkBusy(false);
+    if (ok > 0) toast.success(`Password reset for ${ok} member${ok > 1 ? "s" : ""}`);
+    if (failed.length > 0) toast.error(`Failed for ${failed.length}: ${failed.slice(0, 3).join(", ")}`);
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
       <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
@@ -558,7 +641,15 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
       <div className="surface overflow-hidden">
         <div className="space-y-3 border-b border-border bg-secondary/30 px-4 py-4 sm:px-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-sm font-bold">Members</h2>
+            <label className="flex min-w-0 items-center gap-2">
+              <Checkbox
+                checked={allVisibleSelected}
+                onCheckedChange={toggleAllVisible}
+                aria-label="Select all visible members"
+                disabled={visible.length === 0}
+              />
+              <span className="font-display text-sm font-bold">Members</span>
+            </label>
             <Badge variant="secondary" className="font-mono text-[11px]">
               {visible.length}/{members.data?.length ?? 0}
             </Badge>
@@ -601,9 +692,79 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             </div>
           </div>
         </div>
+        {selectedRows.length > 0 ? (
+          <div className="space-y-3 border-b border-border bg-primary/5 px-4 py-3 sm:px-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="text-[11px]">{selectedRows.length} selected</Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkSetActive(true)}
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Activate
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkSetActive(false)}
+              >
+                <UserX className="h-3.5 w-3.5" />
+                Deactivate
+              </Button>
+              {isOwner ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs"
+                  disabled={bulkBusy}
+                  onClick={() => void bulkGrantAccess()}
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Assign access
+                </Button>
+              ) : null}
+              <button
+                type="button"
+                className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setSelected([])}
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                className="bg-background sm:max-w-56"
+                value={bulkPwd}
+                minLength={6}
+                placeholder="New password"
+                onChange={(e) => setBulkPwd(e.target.value)}
+              />
+              <Button
+                size="sm"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkResetPasswords()}
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                {bulkBusy ? "Working…" : `Reset ${selectedRows.length} password${selectedRows.length > 1 ? "s" : ""}`}
+              </Button>
+            </div>
+          </div>
+        ) : null}
         <ul className="max-h-[560px] divide-y divide-border overflow-y-auto sm:max-h-[720px]">
           {visible.map((m) => (
-            <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
+            <MemberRow
+              key={m.id}
+              member={m}
+              selected={selected.includes(m.id)}
+              onToggle={() => toggleOne(m.id)}
+              onChanged={() => members.refetch()}
+            />
           ))}
           {visible.length === 0 ? (
             <li className="p-5">
@@ -634,10 +795,12 @@ type MemberRowProps = {
     photo_url: string | null;
     resume_url: string | null;
   };
+  selected: boolean;
+  onToggle: () => void;
   onChanged: () => void;
 };
 
-function MemberRow({ member, onChanged }: MemberRowProps) {
+function MemberRow({ member, selected, onToggle, onChanged }: MemberRowProps) {
   const [pwd, setPwd] = useState("");
   const [open, setOpen] = useState(false);
   const initials = (member.full_name ?? member.email)
@@ -652,6 +815,12 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
     <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-3">
+          <Checkbox
+            className="mt-1 shrink-0"
+            checked={selected}
+            onCheckedChange={onToggle}
+            aria-label={`Select ${member.email}`}
+          />
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             {initials}
           </span>
