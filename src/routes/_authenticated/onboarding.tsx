@@ -57,7 +57,9 @@ function Onboarding() {
     }
     setBusy(true);
     try {
-      const photoPath = photo ? await uploadUserFile("photos", user.id, photo) : profile?.photo_url;
+      const photoPath = photo
+        ? await uploadUserFile("photos", user.id, photo)
+        : (profile?.photo_url ?? null);
       const resumePath = resume
         ? await uploadUserFile("resumes", user.id, resume)
         : (profile?.resume_url ?? null);
