@@ -177,7 +177,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const { isAdmin, loading, profile } = useAuth();
+  const { isAdmin, isOwner, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -209,6 +209,9 @@ function AdminPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
             {profile?.full_name ?? profile?.email ?? "Admin"}
+            <Badge variant={isOwner ? "default" : "secondary"} className="text-[10px]">
+              {isOwner ? "owner" : "co-admin"}
+            </Badge>
           </span>
         }
       />
@@ -219,21 +222,26 @@ function AdminPage() {
 }
 
 function AdminWorkspace() {
+  const { isOwner } = useAuth();
   const [active, setActive] = useState<SectionKey>("members");
-  const current =
-    NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === active) ?? NAV_GROUPS[0]!.items[0]!;
+  const groups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => isOwner || !i.ownerOnly),
+  })).filter((g) => g.items.length > 0);
+  const allItems = groups.flatMap((g) => g.items);
+  const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
       <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.group} className="mb-2 last:mb-0">
             <p className="label-mono px-3 pb-1.5 pt-2 text-muted-foreground">{group.group}</p>
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const ItemIcon = item.icon;
-                const isActive = item.key === active;
+                const isActive = item.key === current.key;
                 return (
                   <li key={item.key}>
                     <button
@@ -257,9 +265,9 @@ function AdminWorkspace() {
       </nav>
 
       <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
-        {NAV_GROUPS.flatMap((g) => g.items).map((item) => {
+        {allItems.map((item) => {
           const ItemIcon = item.icon;
-          const isActive = item.key === active;
+          const isActive = item.key === current.key;
           return (
             <button
               key={item.key}
