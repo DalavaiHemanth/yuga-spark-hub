@@ -93,6 +93,7 @@ export type Database = {
       }
       hackathons: {
         Row: {
+          banner_url: string | null
           certificate_mode: string
           created_at: string
           created_by: string | null
@@ -100,6 +101,8 @@ export type Database = {
           end_time: string | null
           event_date: string
           id: string
+          mode: string
+          registration_deadline: string | null
           registration_open: boolean
           start_time: string | null
           team_max: number
@@ -109,6 +112,7 @@ export type Database = {
           venue: string | null
         }
         Insert: {
+          banner_url?: string | null
           certificate_mode?: string
           created_at?: string
           created_by?: string | null
@@ -116,6 +120,8 @@ export type Database = {
           end_time?: string | null
           event_date: string
           id?: string
+          mode?: string
+          registration_deadline?: string | null
           registration_open?: boolean
           start_time?: string | null
           team_max?: number
@@ -125,6 +131,7 @@ export type Database = {
           venue?: string | null
         }
         Update: {
+          banner_url?: string | null
           certificate_mode?: string
           created_at?: string
           created_by?: string | null
@@ -132,6 +139,8 @@ export type Database = {
           end_time?: string | null
           event_date?: string
           id?: string
+          mode?: string
+          registration_deadline?: string | null
           registration_open?: boolean
           start_time?: string | null
           team_max?: number
@@ -174,6 +183,7 @@ export type Database = {
           body: string | null
           created_at: string
           created_by: string | null
+          expires_at: string | null
           id: string
           kind: string
           link: string | null
@@ -184,6 +194,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           id?: string
           kind?: string
           link?: string | null
@@ -194,6 +205,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           id?: string
           kind?: string
           link?: string | null
@@ -240,6 +252,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_active: boolean
           personal_email: string | null
           photo_url: string | null
           profile_completed: boolean
@@ -253,6 +266,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_active?: boolean
           personal_email?: string | null
           photo_url?: string | null
           profile_completed?: boolean
@@ -266,6 +280,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_active?: boolean
           personal_email?: string | null
           photo_url?: string | null
           profile_completed?: boolean
@@ -340,18 +355,21 @@ export type Database = {
           created_at: string
           id: string
           squad_id: string
+          status: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           squad_id: string
+          status?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           squad_id?: string
+          status?: string
           user_id?: string
         }
         Relationships: [
