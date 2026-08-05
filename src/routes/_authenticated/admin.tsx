@@ -53,6 +53,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { announceHackathon, emailAllMembers } from "@/lib/notify";
 import { EmailLogPanel } from "@/components/admin/EmailLogPanel";
+import { DomainPanel } from "@/components/admin/DomainPanel";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -62,6 +63,7 @@ const RENDERERS: Record<SectionKey, (query?: string) => React.ReactNode> = {
   members: (query) => <MembersPanel initialQuery={query} />,
   mail: () => <MailPanel />,
   emaillog: () => <EmailLogPanel />,
+  domains: () => <DomainPanel />,
   inbox: () => <InboxPanel />,
   hackathons: (query) => <HackathonsPanel initialQuery={query} />,
   results: () => <ResultsPanel />,
