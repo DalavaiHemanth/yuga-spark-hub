@@ -418,35 +418,54 @@ type MemberRowProps = {
 function MemberRow({ member, onChanged }: MemberRowProps) {
   const [pwd, setPwd] = useState("");
   const [open, setOpen] = useState(false);
+  const initials = (member.full_name ?? member.email)
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
-    <li className="px-5 py-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate text-sm font-medium">
-            {member.full_name ?? "Unnamed member"}
-            {!member.is_active ? (
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                inactive
+    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <p className="truncate text-sm font-medium">{member.full_name ?? "Unnamed member"}</p>
+              <Badge variant={member.profile_completed ? "secondary" : "outline"} className="text-[10px]">
+                {member.profile_completed ? "complete" : "pending"}
+              </Badge>
+              {!member.is_active ? (
+                <Badge variant="destructive" className="text-[10px]">
+                  inactive
+                </Badge>
+              ) : null}
+            </div>
+            <p className="truncate font-mono text-xs text-muted-foreground">{member.email}</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              {member.registration_number ?? "no reg no."} · {member.year ?? "year not set"}
+              {member.personal_email ? ` · ${member.personal_email}` : ""}
+            </p>
+            <p className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+              <span className="rounded bg-secondary px-1.5 py-0.5">
+                photo {member.photo_url ? "✓" : "—"}
               </span>
-            ) : null}
-          </p>
-          <p className="font-mono text-xs text-muted-foreground">{member.email}</p>
-          <p className="label-mono mt-1 text-muted-foreground">
-            {member.registration_number ?? "no reg"} · {member.year ?? "no year"} ·{" "}
-            {member.profile_completed ? "profile complete" : "profile pending"}
-          </p>
-          {member.personal_email ? (
-            <p className="label-mono text-muted-foreground">{member.personal_email}</p>
-          ) : null}
-          <p className="label-mono text-muted-foreground">
-            photo {member.photo_url ? "✓" : "—"} · resume {member.resume_url ? "✓" : "—"}
-          </p>
+              <span className="rounded bg-secondary px-1.5 py-0.5">
+                resume {member.resume_url ? "✓" : "—"}
+              </span>
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-1">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
+            title={member.is_active ? "Deactivate member" : "Activate member"}
+            className="gap-1.5 text-xs"
             onClick={async () => {
               const { error } = await supabase
                 .from("profiles")
@@ -459,14 +478,23 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
               }
             }}
           >
+            {member.is_active ? <UserX className="h-3.5 w-3.5" /> : <UserCheck className="h-3.5 w-3.5" />}
             {member.is_active ? "Deactivate" : "Activate"}
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="gap-1.5 text-xs"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <KeyRound className="h-3.5 w-3.5" />
             Password
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            aria-label="Delete member"
             onClick={async () => {
               if (!confirm(`Delete ${member.email}? This cannot be undone.`)) return;
               try {
@@ -478,13 +506,13 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
               }
             }}
           >
-            Delete
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
       {open ? (
         <form
-          className="mt-3 flex gap-2"
+          className="mt-3 flex gap-2 rounded-lg border border-border bg-secondary/40 p-2"
           onSubmit={async (e) => {
             e.preventDefault();
             try {
