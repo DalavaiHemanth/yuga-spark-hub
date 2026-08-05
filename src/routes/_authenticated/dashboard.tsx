@@ -244,7 +244,15 @@ function Dashboard() {
                     <p className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" /> Teams of {h.team_min}–{h.team_max}
                     </p>
+                    <p className="flex items-center gap-1.5 capitalize">
+                      <MapPin className="h-3.5 w-3.5" /> {h.mode} event
+                    </p>
                   </div>
+                  <Countdown
+                    className="mt-4"
+                    target={h.registration_deadline ?? `${h.event_date}T${h.start_time ? h.start_time.slice(0, 8) : "09:00:00"}`}
+                    label={h.registration_deadline ? "Registration closes in" : "Starts in"}
+                  />
                   {!isAdmin ? (
                     <div className="mt-5 flex gap-2">
                       <Button
