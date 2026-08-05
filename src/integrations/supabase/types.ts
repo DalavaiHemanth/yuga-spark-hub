@@ -50,6 +50,47 @@ export type Database = {
         }
         Relationships: []
       }
+      hackathon_results: {
+        Row: {
+          attended: boolean
+          certificate_url: string | null
+          created_at: string
+          hackathon_id: string
+          id: string
+          placement: number | null
+          points: number
+          user_id: string
+        }
+        Insert: {
+          attended?: boolean
+          certificate_url?: string | null
+          created_at?: string
+          hackathon_id: string
+          id?: string
+          placement?: number | null
+          points?: number
+          user_id: string
+        }
+        Update: {
+          attended?: boolean
+          certificate_url?: string | null
+          created_at?: string
+          hackathon_id?: string
+          id?: string
+          placement?: number | null
+          points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hackathon_results_hackathon_id_fkey"
+            columns: ["hackathon_id"]
+            isOneToOne: false
+            referencedRelation: "hackathons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hackathons: {
         Row: {
           certificate_mode: string
@@ -100,6 +141,98 @@ export type Database = {
           venue?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          from_admin: boolean
+          id: string
+          sender_id: string
+          student_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          from_admin?: boolean
+          id?: string
+          sender_id: string
+          student_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          from_admin?: boolean
+          id?: string
+          sender_id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      notices: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          link: string | null
+          options: Json
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          link?: string | null
+          options?: Json
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          link?: string | null
+          options?: Json
+          title?: string
+        }
+        Relationships: []
+      }
+      poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          notice_id: string
+          option_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notice_id: string
+          option_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notice_id?: string
+          option_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_notice_id_fkey"
+            columns: ["notice_id"]
+            isOneToOne: false
+            referencedRelation: "notices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -165,6 +298,103 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "registrations_hackathon_id_fkey"
+            columns: ["hackathon_id"]
+            isOneToOne: false
+            referencedRelation: "hackathons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resources: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          title: string
+          url: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          url: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      squad_members: {
+        Row: {
+          created_at: string
+          id: string
+          squad_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          squad_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          squad_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "squad_members_squad_id_fkey"
+            columns: ["squad_id"]
+            isOneToOne: false
+            referencedRelation: "squads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      squads: {
+        Row: {
+          created_at: string
+          hackathon_id: string
+          id: string
+          leader_id: string
+          looking: boolean
+          name: string
+          pitch: string | null
+        }
+        Insert: {
+          created_at?: string
+          hackathon_id: string
+          id?: string
+          leader_id: string
+          looking?: boolean
+          name: string
+          pitch?: string | null
+        }
+        Update: {
+          created_at?: string
+          hackathon_id?: string
+          id?: string
+          leader_id?: string
+          looking?: boolean
+          name?: string
+          pitch?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "squads_hackathon_id_fkey"
             columns: ["hackathon_id"]
             isOneToOne: false
             referencedRelation: "hackathons"
