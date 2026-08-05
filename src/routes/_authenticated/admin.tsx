@@ -254,9 +254,8 @@ function AdminOverview() {
 
   const s = stats.data;
   return (
-    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard label="Members" value={s?.members ?? "—"} hint={`${s?.pending ?? 0} profiles pending`} />
-      <StatCard label="Upcoming hackathons" value={s?.upcoming ?? "—"} hint="Visible to students now" />
       <StatCard label="Registrations" value={s?.registrations ?? "—"} hint="Across all events" />
       {isOwner ? (
         <StatCard label="Student questions" value={s?.questions ?? "—"} hint="Messages in the inbox" />
