@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Users, UserPlus, LogOut, Trash2 } from "lucide-react";
+import { Users, UserPlus, LogOut, Trash2, Check, X, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AppShell, PageHeader } from "@/components/AppShell";
@@ -69,7 +69,7 @@ function SquadsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("squads")
-        .select("*, squad_members(id,user_id)")
+        .select("*, squad_members(id,user_id,status)")
         .eq("hackathon_id", activeId)
         .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
@@ -78,7 +78,14 @@ function SquadsPage() {
   });
 
   const list = squads.data ?? [];
-  const mySquad = list.find((s) => s.squad_members.some((m) => m.user_id === user?.id));
+  const mySquad = list.find((s) =>
+    s.squad_members.some((m) => m.user_id === user?.id && m.status === "joined"),
+  );
+  const myRequestSquadIds = new Set(
+    list
+      .filter((s) => s.squad_members.some((m) => m.user_id === user?.id && m.status === "requested"))
+      .map((s) => s.id),
+  );
 
   async function createSquad() {
     if (!user || !activeId || !name.trim()) return;
@@ -91,7 +98,9 @@ function SquadsPage() {
       toast.error(error.message);
       return;
     }
-    await supabase.from("squad_members").insert({ squad_id: data.id, user_id: user.id });
+    await supabase
+      .from("squad_members")
+      .insert({ squad_id: data.id, user_id: user.id, status: "joined" });
     setName("");
     setPitch("");
     toast.success("Squad created");
@@ -100,12 +109,27 @@ function SquadsPage() {
 
   async function join(squadId: string) {
     if (!user) return;
-    const { error } = await supabase.from("squad_members").insert({ squad_id: squadId, user_id: user.id });
+    const { error } = await supabase
+      .from("squad_members")
+      .insert({ squad_id: squadId, user_id: user.id, status: "requested" });
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("You joined the squad");
+    toast.success("Request sent — the squad leader will approve it");
+    void squads.refetch();
+  }
+
+  async function decide(memberId: string, approve: boolean) {
+    const q = approve
+      ? supabase.from("squad_members").update({ status: "joined" }).eq("id", memberId)
+      : supabase.from("squad_members").delete().eq("id", memberId);
+    const { error } = await q;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(approve ? "Member approved" : "Request declined");
     void squads.refetch();
   }
 
