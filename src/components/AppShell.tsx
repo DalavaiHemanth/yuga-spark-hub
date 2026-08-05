@@ -67,12 +67,12 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
-      <div>
-        {eyebrow ? <p className="label-mono text-primary">{eyebrow}</p> : null}
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border/70 pb-6">
+      <div className="min-w-0">
+        {eyebrow ? <span className="chip">{eyebrow}</span> : null}
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
         {description ? (
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{description}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
@@ -98,8 +98,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       key={l.to}
       to={l.to}
       onClick={onClick}
-      className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-      activeProps={{ className: "bg-secondary text-foreground" }}
+      className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      activeProps={{
+        className:
+          "bg-[image:var(--gradient-spark)] text-primary-foreground hover:text-primary-foreground shadow-[var(--shadow-spark)]",
+      }}
     >
       <l.icon className="h-4 w-4" />
       {l.label}
@@ -107,8 +110,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-screen flex-col paper-bg">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-md">
+    <div className="paper-bg flex min-h-screen flex-col overflow-x-hidden">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/dashboard">
             <SparkMark />
@@ -154,13 +157,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
           </div>
         </div>
-        <div className="hidden border-t border-border/60 md:block">
-          <nav className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-4 py-1.5 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="hidden border-t border-border/50 md:block">
+          <nav className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {links.map((l) => navLink(l))}
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+        <div className="rise">{children}</div>
+      </main>
       <Footer />
     </div>
   );
