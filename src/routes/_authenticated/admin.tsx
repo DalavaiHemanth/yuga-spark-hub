@@ -12,7 +12,7 @@ import {
   adminSetPassword,
   STUDENT_DEFAULT_PASSWORD,
 } from "@/lib/club.functions";
-import { AppShell, PageHeader, EmptyState, StatCard } from "@/components/AppShell";
+import { AppShell, EmptyState, StatCard } from "@/components/AppShell";
 import {
   Users,
   Mail,
