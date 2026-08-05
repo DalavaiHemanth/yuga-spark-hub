@@ -38,13 +38,127 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
 const DOMAIN = "@rgmcet.edu.in";
+
+type SectionKey =
+  | "members"
+  | "mail"
+  | "hackathons"
+  | "results"
+  | "insights"
+  | "playbook"
+  | "notices"
+  | "inbox"
+  | "access";
+
+type SectionDef = {
+  key: SectionKey;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  render: () => React.ReactNode;
+};
+
+const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
+  {
+    group: "People",
+    items: [
+      {
+        key: "members",
+        label: "Members",
+        icon: Users,
+        title: "Members",
+        description: "Import students, review profiles, reset passwords and manage accounts.",
+        render: () => <MembersPanel />,
+      },
+      {
+        key: "mail",
+        label: "Mail",
+        icon: Mail,
+        title: "Mail",
+        description: "Send individual or bulk email to club members.",
+        render: () => <MailPanel />,
+      },
+      {
+        key: "inbox",
+        label: "Inbox",
+        icon: Inbox,
+        title: "Student inbox",
+        description: "Answer doubts students send from the Ask admin page.",
+        render: () => <InboxPanel />,
+      },
+    ],
+  },
+  {
+    group: "Events",
+    items: [
+      {
+        key: "hackathons",
+        label: "Hackathons",
+        icon: CalendarPlus,
+        title: "Hackathons",
+        description: "Create events, set team size and control registrations.",
+        render: () => <HackathonsPanel />,
+      },
+      {
+        key: "results",
+        label: "Results",
+        icon: Trophy,
+        title: "Results",
+        description: "Mark attendance, award placements and points.",
+        render: () => <ResultsPanel />,
+      },
+      {
+        key: "insights",
+        label: "Insights",
+        icon: BarChart3,
+        title: "Insights",
+        description: "Club statistics, turnout and top performers.",
+        render: () => <InsightsPanel />,
+      },
+    ],
+  },
+  {
+    group: "Content",
+    items: [
+      {
+        key: "playbook",
+        label: "Playbook",
+        icon: BookOpen,
+        title: "Playbook",
+        description: "Curate resources, templates and guides for members.",
+        render: () => <ResourcesPanel />,
+      },
+      {
+        key: "notices",
+        label: "Notices",
+        icon: Megaphone,
+        title: "Notice board",
+        description: "Post announcements, outside hackathons, links and polls.",
+        render: () => <NoticesPanel />,
+      },
+    ],
+  },
+  {
+    group: "Settings",
+    items: [
+      {
+        key: "access",
+        label: "Access",
+        icon: Lock,
+        title: "Access control",
+        description: "Decide who is allowed to create a Yuga Spark account.",
+        render: () => <AccessPanel />,
+      },
+    ],
+  },
+];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -82,7 +196,7 @@ function AdminPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell wide>
       <PageHeader
         eyebrow="Club operations"
         title="Admin console"
@@ -95,60 +209,86 @@ function AdminPage() {
         }
       />
       <AdminOverview />
-      <Tabs defaultValue="members" className="mt-8">
-        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-xl border border-border bg-card p-1.5">
-          {(
-            [
-              ["members", "Members", Users],
-              ["mail", "Mail", Mail],
-              ["hackathons", "Hackathons", CalendarPlus],
-              ["results", "Results", Trophy],
-              ["insights", "Insights", BarChart3],
-              ["playbook", "Playbook", BookOpen],
-              ["notices", "Notices", Megaphone],
-              ["inbox", "Inbox", Inbox],
-              ["access", "Access", Lock],
-            ] as const
-          ).map(([value, label, Icon]) => (
-            <TabsTrigger
-              key={value}
-              value={value}
-              className="gap-1.5 rounded-lg px-3 py-1.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value="members" className="mt-6">
-          <MembersPanel />
-        </TabsContent>
-        <TabsContent value="mail" className="mt-6">
-          <MailPanel />
-        </TabsContent>
-        <TabsContent value="hackathons" className="mt-6">
-          <HackathonsPanel />
-        </TabsContent>
-        <TabsContent value="results" className="mt-6">
-          <ResultsPanel />
-        </TabsContent>
-        <TabsContent value="insights" className="mt-6">
-          <InsightsPanel />
-        </TabsContent>
-        <TabsContent value="playbook" className="mt-6">
-          <ResourcesPanel />
-        </TabsContent>
-        <TabsContent value="notices" className="mt-6">
-          <NoticesPanel />
-        </TabsContent>
-        <TabsContent value="inbox" className="mt-6">
-          <InboxPanel />
-        </TabsContent>
-        <TabsContent value="access" className="mt-6">
-          <AccessPanel />
-        </TabsContent>
-      </Tabs>
+      <AdminWorkspace />
     </AppShell>
+  );
+}
+
+function AdminWorkspace() {
+  const [active, setActive] = useState<SectionKey>("members");
+  const current =
+    NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === active) ?? NAV_GROUPS[0]!.items[0]!;
+  const Icon = current.icon;
+
+  return (
+    <div className="mt-8 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
+      <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.group} className="mb-2 last:mb-0">
+            <p className="label-mono px-3 pb-1.5 pt-2 text-muted-foreground">{group.group}</p>
+            <ul className="space-y-0.5">
+              {group.items.map((item) => {
+                const ItemIcon = item.icon;
+                const isActive = item.key === active;
+                return (
+                  <li key={item.key}>
+                    <button
+                      type="button"
+                      onClick={() => setActive(item.key)}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <ItemIcon className="h-4 w-4 shrink-0" />
+                      <span className="truncate font-medium">{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
+        {NAV_GROUPS.flatMap((g) => g.items).map((item) => {
+          const ItemIcon = item.icon;
+          const isActive = item.key === active;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setActive(item.key)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                isActive
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              <ItemIcon className="h-3.5 w-3.5" />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <section className="min-w-0">
+        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border bg-card px-5 py-4">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <Icon className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-lg font-bold tracking-tight">{current.title}</h2>
+            <p className="truncate text-sm text-muted-foreground">{current.description}</p>
+          </div>
+        </header>
+        <div key={current.key} className="rise mt-5">
+          {current.render()}
+        </div>
+      </section>
+    </div>
   );
 }
 
