@@ -551,6 +551,40 @@ function HackathonsPanel() {
             />
           </div>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="mode">Mode</Label>
+            <select
+              id="mode"
+              value={form.mode}
+              onChange={(e) => setForm({ ...form, mode: e.target.value })}
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="offline">Offline</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="deadline">Registration deadline</Label>
+            <Input
+              id="deadline"
+              type="datetime-local"
+              value={form.registration_deadline}
+              onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="banner">Banner image URL (optional)</Label>
+          <Input
+            id="banner"
+            type="url"
+            value={form.banner_url}
+            placeholder="https://…"
+            onChange={(e) => setForm({ ...form, banner_url: e.target.value })}
+          />
+        </div>
         <Button type="submit" disabled={busy}>
           {busy ? "Publishing…" : "Publish hackathon"}
         </Button>
