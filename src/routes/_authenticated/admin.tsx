@@ -330,7 +330,7 @@ function AdminWorkspace() {
   );
 }
 
-function MembersPanel({ initialQuery }: { initialQuery?: string }) {
+function MembersPanel({ initialQuery }: { initialQuery?: string | undefined }) {
   return <MembersPanelInner initialQuery={initialQuery} />;
 }
 
@@ -375,7 +375,7 @@ function AdminOverview() {
   );
 }
 
-function MembersPanelInner({ initialQuery }: { initialQuery?: string }) {
+function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined }) {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState(initialQuery ?? "");
@@ -734,7 +734,7 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
   );
 }
 
-function HackathonsPanel({ initialQuery }: { initialQuery?: string }) {
+function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }) {
   const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
