@@ -277,35 +277,51 @@ function MembersPanelInner() {
   })();
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
-      <div className="space-y-6">
-        <div className="space-y-3 surface p-6">
-          <h2 className="label-mono text-muted-foreground">Add members</h2>
-          <p className="text-xs text-muted-foreground">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <div className="surface p-5">
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Users className="h-4 w-4" />
+            </span>
+            <h2 className="font-display text-sm font-bold">Add members</h2>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             One roll number or email per line. Bare roll numbers get {DOMAIN} appended. Default
-            password: <span className="font-mono text-foreground">yugaspark123</span>
+            password{" "}
+            <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground">
+              yugaspark123
+            </span>
           </p>
           <Textarea
+            className="mt-3"
             rows={6}
             value={emails}
             placeholder={`21091A0501\nsomeone${DOMAIN}`}
             onChange={(e) => setEmails(e.target.value)}
           />
           <Button
+            className="mt-3 w-full"
             disabled={busy}
             onClick={() => createFromList(emails.split(/[\n,;\s]+/).map(normalize))}
           >
             {busy ? "Working…" : "Create accounts"}
           </Button>
-        </div>
 
-        <div className="space-y-3 surface p-6">
-          <h2 className="label-mono text-muted-foreground">Bulk import from Excel</h2>
-          <Label htmlFor="sheet" className="text-xs text-muted-foreground">
+          <Separator className="my-5" />
+
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Upload className="h-4 w-4" />
+            </span>
+            <h2 className="font-display text-sm font-bold">Bulk import</h2>
+          </div>
+          <Label htmlFor="sheet" className="mt-3 block text-xs font-normal text-muted-foreground">
             Any .xlsx/.csv — only email-like cells are used.
           </Label>
           <Input
             id="sheet"
+            className="mt-2"
             type="file"
             accept=".xlsx,.xls,.csv"
             disabled={busy}
@@ -317,56 +333,64 @@ function MembersPanelInner() {
         </div>
       </div>
 
-      <div className="surface">
-        <div className="space-y-3 border-b border-border px-5 py-4">
+      <div className="surface overflow-hidden">
+        <div className="space-y-3 border-b border-border bg-secondary/30 px-5 py-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="label-mono text-muted-foreground">
-              Members ({visible.length}/{members.data?.length ?? 0})
-            </h2>
+            <h2 className="font-display text-sm font-bold">Members</h2>
+            <Badge variant="secondary" className="font-mono text-[11px]">
+              {visible.length}/{members.data?.length ?? 0}
+            </Badge>
           </div>
           <Input
+            className="bg-background"
             value={q}
             placeholder="Search name, email, roll number, year…"
             onChange={(e) => setQ(e.target.value)}
           />
-          <div className="flex flex-wrap gap-2">
-            {(["all", "complete", "pending", "inactive"] as const).map((f) => (
-              <Button
-                key={f}
-                size="sm"
-                variant={filter === f ? "default" : "outline"}
-                onClick={() => setFilter(f)}
-                className="capitalize"
-              >
-                {f}
-              </Button>
-            ))}
-            <span className="ml-auto flex gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+              {(["all", "complete", "pending", "inactive"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                    filter === f
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <div className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <span>Sort</span>
               {(["recent", "name", "year"] as const).map((s) => (
-                <Button
+                <button
                   key={s}
-                  size="sm"
-                  variant={sort === s ? "secondary" : "ghost"}
                   onClick={() => setSort(s)}
-                  className="capitalize"
+                  className={`rounded-md px-2 py-1 capitalize transition-colors ${
+                    sort === s ? "bg-secondary font-medium text-foreground" : "hover:text-foreground"
+                  }`}
                 >
                   {s}
-                </Button>
+                </button>
               ))}
-            </span>
+            </div>
           </div>
         </div>
-        <ul className="divide-y divide-border">
+        <ul className="max-h-[720px] divide-y divide-border overflow-y-auto">
           {visible.map((m) => (
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
           {visible.length === 0 ? (
-            <li className="px-5 py-8 text-center">
-              <p className="font-display text-sm font-bold">No members match this view</p>
-              <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
-                Add members one by one with the form above, or bulk import an Excel sheet of
-                register numbers — emails are generated automatically.
-              </p>
+            <li className="p-5">
+              <EmptyState
+                tone="quiet"
+                icon={Users}
+                title="No members match this view"
+                description="Add members with the form on the left, or bulk import an Excel sheet of register numbers."
+              />
             </li>
           ) : null}
         </ul>
