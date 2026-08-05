@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Stethoscope } from "lucide-react";
 import { SystemChecksPanel } from "@/components/admin/SystemChecksPanel";
+import { AdminSearch, type SearchHit } from "@/components/admin/AdminSearch";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
@@ -69,7 +70,7 @@ type SectionDef = {
   title: string;
   description: string;
   ownerOnly?: boolean;
-  render: () => React.ReactNode;
+  render: (query?: string) => React.ReactNode;
 };
 
 const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
@@ -82,7 +83,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: Users,
         title: "Members",
         description: "Import students, review profiles, reset passwords and manage accounts.",
-        render: () => <MembersPanel />,
+        render: (query) => <MembersPanel initialQuery={query} />,
       },
       {
         key: "mail",
@@ -113,7 +114,7 @@ const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
         icon: CalendarPlus,
         title: "Hackathons",
         description: "Create events, set team size and control registrations.",
-        render: () => <HackathonsPanel />,
+        render: (query) => <HackathonsPanel initialQuery={query} />,
       },
       {
         key: "results",
@@ -249,6 +250,7 @@ function AdminPage() {
 function AdminWorkspace() {
   const { isOwner } = useAuth();
   const [active, setActive] = useState<SectionKey>("members");
+  const [seed, setSeed] = useState<{ key: SectionKey; query: string } | null>(null);
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
     items: g.items.filter((i) => isOwner || !i.ownerOnly),
@@ -256,9 +258,23 @@ function AdminWorkspace() {
   const allItems = groups.flatMap((g) => g.items);
   const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
+  const query = seed && seed.key === current.key ? seed.query : undefined;
+
+  function handlePick(hit: SearchHit, q: string) {
+    const key: SectionKey = hit.kind === "student" ? "members" : "hackathons";
+    setActive(key);
+    setSeed({ key, query: hit.kind === "student" ? hit.title : q });
+  }
 
   return (
-    <div className="mt-8 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
+    <>
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <AdminSearch onPick={handlePick} />
+      <p className="text-xs text-muted-foreground">
+        Find any student by name, registration number or email — or jump straight to a hackathon.
+      </p>
+    </div>
+    <div className="mt-4 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
       <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
         {groups.map((group) => (
           <div key={group.group} className="mb-2 last:mb-0">
@@ -321,16 +337,17 @@ function AdminWorkspace() {
             <p className="truncate text-sm text-muted-foreground">{current.description}</p>
           </div>
         </header>
-        <div key={current.key} className="rise mt-5">
-          {current.render()}
+        <div key={`${current.key}-${query ?? ""}`} className="rise mt-5">
+          {current.render(query)}
         </div>
       </section>
     </div>
+    </>
   );
 }
 
-function MembersPanel() {
-  return <MembersPanelInner />;
+function MembersPanel({ initialQuery }: { initialQuery?: string | undefined }) {
+  return <MembersPanelInner initialQuery={initialQuery} />;
 }
 
 function AdminOverview() {
@@ -374,12 +391,19 @@ function AdminOverview() {
   );
 }
 
-function MembersPanelInner() {
+function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined }) {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery ?? "");
   const [filter, setFilter] = useState<"all" | "complete" | "pending" | "inactive">("all");
   const [sort, setSort] = useState<"recent" | "name" | "year">("recent");
+
+  useEffect(() => {
+    if (initialQuery) {
+      setQ(initialQuery);
+      setFilter("all");
+    }
+  }, [initialQuery]);
 
   const members = useQuery({
     queryKey: ["all-profiles"],
@@ -726,7 +750,7 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
   );
 }
 
-function HackathonsPanel() {
+function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }) {
   const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
@@ -754,6 +778,13 @@ function HackathonsPanel() {
       return data;
     },
   });
+
+  const needle = (initialQuery ?? "").trim().toLowerCase();
+  const visibleHackathons = (hackathons.data ?? []).filter((h) =>
+    needle
+      ? h.title.toLowerCase().includes(needle) || (h.venue ?? "").toLowerCase().includes(needle)
+      : true,
+  );
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -930,16 +961,18 @@ function HackathonsPanel() {
 
       <div className="surface overflow-hidden">
         <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
-          <h2 className="font-display text-sm font-bold">All hackathons</h2>
+          <h2 className="font-display text-sm font-bold">
+            {initialQuery ? `Matching “${initialQuery}”` : "All hackathons"}
+          </h2>
           <Badge variant="secondary" className="font-mono text-[11px]">
-            {hackathons.data?.length ?? 0}
+            {visibleHackathons.length}
           </Badge>
         </div>
         <ul className="divide-y divide-border">
-          {(hackathons.data ?? []).map((h) => (
+          {visibleHackathons.map((h) => (
             <HackathonRow key={h.id} hackathon={h} onChanged={() => hackathons.refetch()} />
           ))}
-          {hackathons.data?.length === 0 ? (
+          {visibleHackathons.length === 0 ? (
             <li className="p-5">
               <EmptyState
                 tone="quiet"
