@@ -12,7 +12,7 @@ import {
   adminSetPassword,
   STUDENT_DEFAULT_PASSWORD,
 } from "@/lib/club.functions";
-import { AppShell, EmptyState, StatCard } from "@/components/AppShell";
+import { AppShell, EmptyState } from "@/components/AppShell";
 import {
   Users,
   Mail,
@@ -23,7 +23,6 @@ import {
   Megaphone,
   Inbox,
   Lock,
-  ShieldCheck,
   KeyRound,
   Trash2,
   UserCheck,
@@ -115,16 +114,6 @@ function AdminPage() {
 
   return (
     <AppShell wide>
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">{profile?.full_name ?? profile?.email ?? "Admin"}</span>
-          <Badge variant={isOwner ? "default" : "secondary"} className="text-[10px]">
-            {isOwner ? "owner" : "co-admin"}
-          </Badge>
-        </div>
-      </div>
-      <AdminOverview />
       <AdminWorkspace />
     </AppShell>
   );
@@ -221,31 +210,6 @@ function MembersPanel({ initialQuery }: { initialQuery?: string | undefined }) {
   return <MembersPanelInner initialQuery={initialQuery} />;
 }
 
-function AdminOverview() {
-  const stats = useQuery({
-    queryKey: ["admin-overview"],
-    queryFn: async () => {
-      const [members, registrations] = await Promise.all([
-        supabase.from("profiles").select("id,profile_completed,is_active"),
-        supabase.from("registrations").select("id"),
-      ]);
-      const profiles = members.data ?? [];
-      return {
-        members: profiles.length,
-        pending: profiles.filter((p) => !p.profile_completed).length,
-        registrations: registrations.data?.length ?? 0,
-      };
-    },
-  });
-
-  const s = stats.data;
-  return (
-    <div className="mt-8 grid gap-3 sm:grid-cols-2">
-      <StatCard label="Members" value={s?.members ?? "—"} hint={`${s?.pending ?? 0} profiles pending`} />
-      <StatCard label="Registrations" value={s?.registrations ?? "—"} hint="Across all events" />
-    </div>
-  );
-}
 
 function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined }) {
   const { isOwner } = useAuth();
