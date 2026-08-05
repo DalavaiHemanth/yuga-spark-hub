@@ -779,6 +779,13 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
     },
   });
 
+  const needle = (initialQuery ?? "").trim().toLowerCase();
+  const visibleHackathons = (hackathons.data ?? []).filter((h) =>
+    needle
+      ? h.title.toLowerCase().includes(needle) || (h.venue ?? "").toLowerCase().includes(needle)
+      : true,
+  );
+
   async function create(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
