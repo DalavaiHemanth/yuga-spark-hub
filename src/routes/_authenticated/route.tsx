@@ -1,21 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-
-const OPEN_PATHS = ["/onboarding", "/profile"];
-
-// Student-only surfaces. Admins are redirected to the admin panel.
-const STUDENT_PATHS = [
-  "/dashboard",
-  "/profile",
-  "/leaderboard",
-  "/squads",
-  "/playbook",
-  "/certificates",
-  "/chat",
-  "/notices",
-  "/badge",
-  "/onboarding",
-];
+import { resolveAccess } from "@/lib/route-access";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -33,12 +18,13 @@ export const Route = createFileRoute("/_authenticated")({
     ]);
     const isAdmin = Boolean(roles?.some((r) => r.role === "admin"));
 
-    if (isAdmin && STUDENT_PATHS.includes(location.pathname)) {
-      throw redirect({ to: "/admin", search: { section: "members" }, replace: true });
-    }
-
-    if (!isAdmin && !OPEN_PATHS.includes(location.pathname) && profile && !profile.profile_completed) {
-      throw redirect({ to: "/onboarding" });
+    const access = resolveAccess({
+      pathname: location.pathname,
+      isAdmin,
+      profileCompleted: profile ? profile.profile_completed : null,
+    });
+    if (access.kind === "redirect") {
+      throw redirect({ to: access.to, search: access.search, replace: true } as never);
     }
 
     return { user: data.user };

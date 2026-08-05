@@ -139,7 +139,7 @@ function Dashboard() {
         actions={
           isAdmin ? (
             <Button asChild>
-              <Link to="/admin">Open admin console</Link>
+              <Link to="/admin" search={{ section: "members" }}>Open admin console</Link>
             </Button>
           ) : (
             <Button asChild variant="outline">
@@ -189,7 +189,7 @@ function Dashboard() {
             <div className="mt-5 flex flex-wrap gap-2">
               {isAdmin ? (
                 <Button asChild size="sm">
-                  <Link to="/admin">Create a hackathon</Link>
+                  <Link to="/admin" search={{ section: "members" }}>Create a hackathon</Link>
                 </Button>
               ) : (
                 <>
@@ -259,7 +259,7 @@ function Dashboard() {
               action={
                 isAdmin ? (
                   <Button asChild size="sm">
-                    <Link to="/admin">Create a hackathon</Link>
+                    <Link to="/admin" search={{ section: "members" }}>Create a hackathon</Link>
                   </Button>
                 ) : (
                   <Button asChild size="sm">
