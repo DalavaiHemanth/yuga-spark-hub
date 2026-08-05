@@ -74,12 +74,23 @@ export function MailPanel() {
     .map((m) => (usePersonal && m.personal_email ? m.personal_email : m.email))
     .filter(Boolean);
 
-  function mailto() {
-    if (recipients.length === 0) {
+  // Mail apps silently drop very long mailto links, so send in batches.
+  const BATCH_SIZE = 40;
+  const batches = useMemo(() => {
+    const out: string[][] = [];
+    for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+      out.push(recipients.slice(i, i + BATCH_SIZE));
+    }
+    return out;
+  }, [recipients]);
+
+  function openBatch(index: number) {
+    const batch = batches[index];
+    if (!batch) {
       toast.error("No recipients");
       return;
     }
-    const url = `mailto:?bcc=${encodeURIComponent(recipients.join(","))}&subject=${encodeURIComponent(
+    const url = `mailto:?bcc=${encodeURIComponent(batch.join(","))}&subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
