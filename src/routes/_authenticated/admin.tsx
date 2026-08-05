@@ -280,7 +280,13 @@ function MembersPanel() {
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
           {visible.length === 0 ? (
-            <li className="px-5 py-6 text-sm text-muted-foreground">No members yet.</li>
+            <li className="px-5 py-8 text-center">
+              <p className="font-display text-sm font-bold">No members match this view</p>
+              <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+                Add members one by one with the form above, or bulk import an Excel sheet of
+                register numbers — emails are generated automatically.
+              </p>
+            </li>
           ) : null}
         </ul>
       </div>
