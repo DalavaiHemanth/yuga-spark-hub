@@ -51,6 +51,10 @@ function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!loading && isAdmin) {
+      navigate({ to: "/admin", search: { section: "members" }, replace: true });
+      return;
+    }
     if (!loading && profile && !profile.profile_completed && !isAdmin) {
       navigate({ to: "/onboarding", replace: true });
     }
