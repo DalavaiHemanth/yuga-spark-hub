@@ -836,17 +836,30 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
   }
 
   return (
-    <li className="px-5 py-4">
+    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium">{h.title}</p>
-          <p className="label-mono text-muted-foreground">
-            {new Date(h.event_date).toLocaleDateString()} · teams {h.team_min}–{h.team_max} ·{" "}
-            {h.mode}
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{h.title}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {new Date(h.event_date).toLocaleDateString()}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              {h.venue ?? "venue TBA"}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              {h.team_min}–{h.team_max}
+            </span>
+            <Badge variant="outline" className="text-[10px] capitalize">
+              {h.mode}
+            </Badge>
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="label-mono text-muted-foreground">Reg</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs text-muted-foreground">Reg</span>
           <Switch
             checked={h.registration_open}
             onCheckedChange={async (v) => {
@@ -858,12 +871,15 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
               else onChanged();
             }}
           />
-          <Button size="sm" variant="secondary" onClick={() => setEdit((v) => !v)}>
+          <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setEdit((v) => !v)}>
+            <Pencil className="h-3.5 w-3.5" />
             {edit ? "Cancel" : "Edit"}
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            aria-label="Delete hackathon"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={async () => {
               if (!confirm(`Delete "${h.title}"?`)) return;
               const { error } = await supabase.from("hackathons").delete().eq("id", h.id);
@@ -871,12 +887,12 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
               else onChanged();
             }}
           >
-            Delete
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
       {edit ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 rounded-lg border border-border bg-secondary/40 p-3 sm:grid-cols-2">
           <Input
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
