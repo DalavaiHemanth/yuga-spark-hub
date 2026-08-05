@@ -1,8 +1,10 @@
 /** Server-only email delivery through the Resend connector gateway. */
+import { personalize, renderHtml, type Recipient } from "./email-template";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
-export type Recipient = { email: string; name?: string | null };
+export type { Recipient };
+export { personalize, renderHtml };
 
 export type SendOutcome = {
   email: string;
@@ -11,42 +13,6 @@ export type SendOutcome = {
   error: string | null;
   providerId: string | null;
 };
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/** Replaces {{name}} / {{email}} placeholders with the recipient's own values. */
-export function personalize(text: string, r: Recipient) {
-  const first = (r.name ?? "").trim().split(" ")[0] || "there";
-  return text
-    .replace(/\{\{\s*name\s*\}\}/gi, (r.name ?? "").trim() || "there")
-    .replace(/\{\{\s*first_name\s*\}\}/gi, first)
-    .replace(/\{\{\s*email\s*\}\}/gi, r.email);
-}
-
-export function renderHtml(subject: string, body: string) {
-  const paragraphs = body
-    .split(/\n{2,}/)
-    .map((p) => `<p style="margin:0 0 16px;line-height:1.6;">${escapeHtml(p).replace(/\n/g, "<br/>")}</p>`)
-    .join("");
-  return `<!doctype html><html><body style="margin:0;background:#f5f6f8;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#1a1c1f;">
-  <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
-    <div style="background:#ffffff;border-radius:14px;padding:28px;border:1px solid #e6e8ec;">
-      <div style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#e2603a;font-weight:700;">Yuga Spark</div>
-      <h1 style="margin:8px 0 20px;font-size:20px;line-height:1.3;">${escapeHtml(subject)}</h1>
-      <div style="font-size:15px;color:#31353b;">${paragraphs}</div>
-    </div>
-    <p style="margin:18px 0 0;font-size:12px;color:#8b9099;text-align:center;">
-      Yuga Spark — the hackathon club. You receive this because you are a club member.
-    </p>
-  </div>
-</body></html>`;
-}
 
 type BatchItem = {
   from: string;
