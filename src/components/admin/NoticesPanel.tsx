@@ -24,6 +24,7 @@ export function NoticesPanel() {
     body: "",
     link: "",
     options: "",
+    expires_at: "",
   });
 
   const notices = useQuery({
@@ -49,13 +50,14 @@ export function NoticesPanel() {
       body: form.body.trim() || null,
       link: form.link.trim() || null,
       options,
+      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
       created_by: user?.id ?? null,
     });
     if (error) {
       toast.error(error.message);
       return;
     }
-    setForm({ kind: "announcement", title: "", body: "", link: "", options: "" });
+    setForm({ kind: "announcement", title: "", body: "", link: "", options: "", expires_at: "" });
     toast.success("Posted to the notice board");
     void notices.refetch();
   }
@@ -109,6 +111,14 @@ export function NoticesPanel() {
             />
           </div>
         ) : null}
+        <div>
+          <Label>Expires on (optional)</Label>
+          <Input
+            type="datetime-local"
+            value={form.expires_at}
+            onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
+          />
+        </div>
         <Button type="submit" className="w-full">
           Post notice
         </Button>
@@ -121,6 +131,9 @@ export function NoticesPanel() {
               <p className="font-medium">{n.title}</p>
               <p className="text-xs capitalize text-muted-foreground">
                 {n.kind} · {new Date(n.created_at).toLocaleDateString()}
+                {n.expires_at
+                  ? ` · ${new Date(n.expires_at).getTime() < Date.now() ? "expired" : `closes ${new Date(n.expires_at).toLocaleDateString()}`}`
+                  : ""}
               </p>
             </div>
             <Button variant="ghost" size="icon" onClick={() => remove(n.id)} aria-label="Delete">
