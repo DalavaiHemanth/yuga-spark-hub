@@ -250,6 +250,7 @@ function AdminPage() {
 function AdminWorkspace() {
   const { isOwner } = useAuth();
   const [active, setActive] = useState<SectionKey>("members");
+  const [seed, setSeed] = useState<{ key: SectionKey; query: string } | null>(null);
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
     items: g.items.filter((i) => isOwner || !i.ownerOnly),
@@ -257,9 +258,23 @@ function AdminWorkspace() {
   const allItems = groups.flatMap((g) => g.items);
   const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
+  const query = seed && seed.key === current.key ? seed.query : undefined;
+
+  function handlePick(hit: SearchHit, q: string) {
+    const key: SectionKey = hit.kind === "student" ? "members" : "hackathons";
+    setActive(key);
+    setSeed({ key, query: hit.kind === "student" ? hit.title : q });
+  }
 
   return (
-    <div className="mt-8 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
+    <>
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <AdminSearch onPick={handlePick} />
+      <p className="text-xs text-muted-foreground">
+        Find any student by name, registration number or email — or jump straight to a hackathon.
+      </p>
+    </div>
+    <div className="mt-4 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
       <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
         {groups.map((group) => (
           <div key={group.group} className="mb-2 last:mb-0">
