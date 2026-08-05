@@ -105,6 +105,10 @@ function AuthPage() {
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy ? "Checking…" : "Sign in"}
                 </Button>
+                <p className="text-xs text-muted-foreground">
+                  Club admins sign in here with their club email — the admin console appears
+                  automatically in the top navigation.
+                </p>
               </form>
             </TabsContent>
             <TabsContent value="signup">
@@ -119,7 +123,8 @@ function AuthPage() {
                   {busy ? "Creating…" : "Create account"}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  If the club is set to invite-only, only emails added by an admin can join.
+                  Joining is open to any email right now. Admins can switch the club to
+                  invite-only later, and then only added emails can join.
                 </p>
               </form>
             </TabsContent>
