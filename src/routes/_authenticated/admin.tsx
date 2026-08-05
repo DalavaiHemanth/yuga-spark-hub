@@ -830,7 +830,7 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("hackathons").insert({
+    const record = {
       title: form.title.trim(),
       description: form.description.trim() || null,
       venue: form.venue.trim() || null,
@@ -845,11 +845,14 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
         : null,
       banner_url: form.banner_url.trim() || null,
       created_by: user.id,
-    });
+    };
+    const { error } = await supabase.from("hackathons").insert(record);
     setBusy(false);
     if (error) toast.error(error.message);
     else {
-      toast.success("Hackathon published");
+      const noticeError = await announceHackathon(record, user.id);
+      if (noticeError) toast.warning(`Published, but the notice failed: ${noticeError}`);
+      else toast.success("Hackathon published and announced on the notice board");
       setForm({
         title: "",
         description: "",
