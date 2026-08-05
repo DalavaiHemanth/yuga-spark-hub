@@ -1,24 +1,9 @@
 /** Server-only Resend domain administration through the connector gateway. */
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
-export type DnsRecord = {
-  record: string;
-  name: string;
-  type: string;
-  value: string;
-  ttl?: string | null;
-  priority?: number | null;
-  status?: string | null;
-};
+import type { DnsRecord, ResendDomain } from "./resend-domains.types";
 
-export type ResendDomain = {
-  id: string;
-  name: string;
-  status: string;
-  region?: string | null;
-  createdAt?: string | null;
-  records?: DnsRecord[];
-};
+export type { DnsRecord, ResendDomain };
 
 function keys() {
   const lovableKey = process.env["LOVABLE_API_KEY"];

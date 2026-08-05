@@ -11,12 +11,14 @@ import {
   ScrollText,
   Stethoscope,
   Send,
+  Globe,
 } from "lucide-react";
 
 export type SectionKey =
   | "members"
   | "mail"
   | "emaillog"
+  | "domains"
   | "hackathons"
   | "results"
   | "insights"
@@ -31,6 +33,7 @@ export const SECTION_KEYS: SectionKey[] = [
   "members",
   "mail",
   "emaillog",
+  "domains",
   "inbox",
   "hackathons",
   "results",
@@ -76,6 +79,14 @@ export const ADMIN_NAV: { group: string; items: SectionMeta[] }[] = [
         icon: Send,
         title: "Email delivery log",
         description: "Every announcement and results email the app sent, with delivery status.",
+        ownerOnly: true,
+      },
+      {
+        key: "domains",
+        label: "Sender domain",
+        icon: Globe,
+        title: "Sender domain",
+        description: "Verify the club domain and choose the From address used for club email.",
         ownerOnly: true,
       },
       {

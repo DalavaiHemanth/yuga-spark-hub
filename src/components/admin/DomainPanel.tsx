@@ -10,7 +10,7 @@ import {
   removeSenderDomain,
   verifySenderDomain,
 } from "@/lib/resend-domains.functions";
-import type { DnsRecord, ResendDomain } from "@/lib/resend-domains.server";
+import type { DnsRecord, ResendDomain } from "@/lib/resend-domains.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,7 +82,7 @@ export function DomainPanel() {
 
   const domains = useQuery<ResendDomain[]>({
     queryKey: ["sender-domains"],
-    queryFn: () => list({ data: undefined as never }),
+    queryFn: () => list(),
     retry: false,
   });
 
