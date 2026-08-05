@@ -196,3 +196,76 @@
     box-shadow: var(--shadow-lift);
   }
 }
+
+@utility surface-quiet {
+  background-color: color-mix(in oklab, var(--color-card) 70%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
+}
+
+@utility surface-ink {
+  background-image: var(--gradient-ink);
+  color: oklch(0.97 0.01 80);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lift);
+}
+
+@utility surface-ember {
+  background-image: var(--gradient-spark);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lift);
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 22%, var(--color-border));
+  background-color: color-mix(in oklab, var(--color-primary) 8%, var(--color-card));
+  padding: 0.25rem 0.7rem;
+  font-family: var(--brand-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-primary) 80%, var(--color-foreground));
+}
+
+@utility ember-text {
+  background-image: var(--gradient-spark);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glow-blob {
+  position: absolute;
+  border-radius: 999px;
+  background-image: var(--gradient-spark);
+  filter: blur(56px);
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+@utility rise {
+  animation: rise-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
