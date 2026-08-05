@@ -152,6 +152,11 @@ export function ResultsPanel() {
           Mark attendance, set placement (1–3 counts as a win) and award points. Certificates unlock
           automatically for attended members; upload an official file to override the generated one.
         </p>
+        {hid ? (
+          <Button className="mt-4" size="sm" onClick={announce} disabled={announcing}>
+            {announcing ? "Announcing…" : "Announce results to members"}
+          </Button>
+        ) : null}
       </div>
 
       {hid ? (
