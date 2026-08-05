@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { sendClubEmail } from "@/lib/email.functions";
 import { SenderSettings } from "@/components/admin/SenderSettings";
+import { TemplatePreview } from "@/components/admin/TemplatePreview";
+import type { EmailTemplate } from "@/lib/email-template";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +26,7 @@ export function MailPanel() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [usePersonal, setUsePersonal] = useState(false);
+  const [kind, setKind] = useState<"broadcast" | "announcement" | "results">("broadcast");
 
   const members = useQuery({
     queryKey: ["mail-members"],
@@ -109,7 +112,7 @@ export function MailPanel() {
     setSending(true);
     try {
       const result = await send({
-        data: { subject, body, kind: "broadcast", recipients: targets },
+        data: { subject, body, kind, recipients: targets },
       });
       if (result.failed > 0) {
         toast.error(`${result.sent} sent, ${result.failed} failed. ${result.firstError ?? ""}`);
