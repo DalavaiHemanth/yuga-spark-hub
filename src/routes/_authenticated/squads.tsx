@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Users, UserPlus, LogOut, Trash2, Check, X, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -181,9 +181,28 @@ function SquadsPage() {
       />
 
       {!active ? (
-        <p className="mt-8 text-sm text-muted-foreground">
-          No hackathons yet — squads open once admins publish an event.
-        </p>
+        <div className="mt-8">
+          <EmptyState
+            icon={Users}
+            title="No hackathons to squad up for yet"
+            description="Squad building unlocks the moment admins publish an event with a team size."
+            steps={[
+              "Watch the dashboard — new hackathons appear there first.",
+              "Check the notice board for outside-college events admins share.",
+              "Once an event is live, come back and create a squad or request to join one.",
+            ]}
+            action={
+              <Button asChild size="sm">
+                <Link to="/dashboard">Go to dashboard</Link>
+              </Button>
+            }
+            secondaryAction={
+              <Button asChild size="sm" variant="outline">
+                <Link to="/notices">Notice board</Link>
+              </Button>
+            }
+          />
+        </div>
       ) : (
         <div className="mt-8 grid gap-6 lg:grid-cols-[340px_1fr]">
           <aside className="surface h-fit p-6">
@@ -213,12 +232,21 @@ function SquadsPage() {
 
           <section className="space-y-4">
             {list.length === 0 ? (
-              <div className="surface p-10 text-center">
-                <Users className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-3 text-sm text-muted-foreground">
-                  No squads yet for {active.title}. Be the first.
-                </p>
-              </div>
+              <EmptyState
+                icon={UserPlus}
+                title={`No squads yet for ${active.title}`}
+                description={`Be the first to open a team — squads need ${active.team_min}–${active.team_max} members.`}
+                steps={[
+                  "Name your squad and write a one-line pitch in the panel on the left.",
+                  "Share the squad name with friends so they can request to join.",
+                  "Approve join requests until you hit the minimum team size.",
+                ]}
+                action={
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/chat">Ask an admin</Link>
+                  </Button>
+                }
+              />
             ) : (
               list.map((s) => {
                 const all = s.squad_members ?? [];
