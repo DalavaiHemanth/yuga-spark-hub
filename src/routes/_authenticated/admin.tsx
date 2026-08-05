@@ -795,10 +795,12 @@ type MemberRowProps = {
     photo_url: string | null;
     resume_url: string | null;
   };
+  selected: boolean;
+  onToggle: () => void;
   onChanged: () => void;
 };
 
-function MemberRow({ member, onChanged }: MemberRowProps) {
+function MemberRow({ member, selected, onToggle, onChanged }: MemberRowProps) {
   const [pwd, setPwd] = useState("");
   const [open, setOpen] = useState(false);
   const initials = (member.full_name ?? member.email)
@@ -813,6 +815,12 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
     <li className="px-4 py-4 transition-colors hover:bg-secondary/30 sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-3">
+          <Checkbox
+            className="mt-1 shrink-0"
+            checked={selected}
+            onCheckedChange={onToggle}
+            aria-label={`Select ${member.email}`}
+          />
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             {initials}
           </span>
