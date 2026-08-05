@@ -52,6 +52,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { announceHackathon } from "@/lib/notify";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
