@@ -74,12 +74,23 @@ export function MailPanel() {
     .map((m) => (usePersonal && m.personal_email ? m.personal_email : m.email))
     .filter(Boolean);
 
-  function mailto() {
-    if (recipients.length === 0) {
+  // Mail apps silently drop very long mailto links, so send in batches.
+  const BATCH_SIZE = 40;
+  const batches = useMemo(() => {
+    const out: string[][] = [];
+    for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+      out.push(recipients.slice(i, i + BATCH_SIZE));
+    }
+    return out;
+  }, [recipients]);
+
+  function openBatch(index: number) {
+    const batch = batches[index];
+    if (!batch) {
       toast.error("No recipients");
       return;
     }
-    const url = `mailto:?bcc=${encodeURIComponent(recipients.join(","))}&subject=${encodeURIComponent(
+    const url = `mailto:?bcc=${encodeURIComponent(batch.join(","))}&subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
@@ -189,11 +200,27 @@ export function MailPanel() {
           <Label htmlFor="body">Message</Label>
           <Textarea id="body" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={mailto}>Open mail app ({recipients.length})</Button>
-          <Button variant="outline" onClick={copyList}>
-            Copy addresses
-          </Button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {batches.length <= 1 ? (
+              <Button onClick={() => openBatch(0)}>Open mail app ({recipients.length})</Button>
+            ) : (
+              batches.map((batch, i) => (
+                <Button key={i} variant={i === 0 ? "default" : "outline"} onClick={() => openBatch(i)}>
+                  Batch {i + 1} ({batch.length})
+                </Button>
+              ))
+            )}
+            <Button variant="outline" onClick={copyList}>
+              Copy addresses
+            </Button>
+          </div>
+          {batches.length > 1 ? (
+            <p className="text-xs text-muted-foreground">
+              {recipients.length} recipients split into {batches.length} batches of up to 40 — mail
+              apps drop very long BCC lists. Open and send each batch in turn.
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
