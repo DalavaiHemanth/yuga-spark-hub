@@ -114,14 +114,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             <SparkMark />
           </Link>
 
-          <nav className="hidden items-center gap-0.5 xl:flex">{links.map((l) => navLink(l))}</nav>
-
           <div className="flex items-center gap-2">
             <div className="hidden items-center gap-2 sm:flex">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary font-mono text-xs font-semibold text-secondary-foreground">
                 {initials}
               </span>
-              <span className="hidden max-w-[160px] flex-col leading-tight 2xl:flex">
+              <span className="hidden max-w-[180px] flex-col leading-tight md:flex">
                 <span className="truncate text-xs font-medium">
                   {profile?.full_name ?? profile?.email}
                 </span>
@@ -143,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="xl:hidden" aria-label="Menu">
+                <Button variant="outline" size="icon" className="md:hidden" aria-label="Menu">
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
@@ -155,6 +153,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
           </div>
+        </div>
+        <div className="hidden border-t border-border/60 md:block">
+          <nav className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-4 py-1.5 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {links.map((l) => navLink(l))}
+          </nav>
         </div>
       </header>
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
