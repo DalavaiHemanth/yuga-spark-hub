@@ -150,7 +150,7 @@ export function SystemChecksPanel() {
       label: "Leaderboard function",
       description: "The leaderboard aggregation runs without error.",
       run: async () => {
-        const { data, error } = await supabase.rpc("get_leaderboard", { _hackathon_id: undefined });
+        const { data, error } = await supabase.rpc("get_leaderboard", {});
         if (error) return { status: "fail", detail: error.message };
         const rows = (data ?? []) as unknown[];
         return rows.length
