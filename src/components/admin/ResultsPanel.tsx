@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { announceResults } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +19,10 @@ import {
 type Row = { attended: boolean; placement: string; points: string };
 
 export function ResultsPanel() {
+  const { user } = useAuth();
   const [hid, setHid] = useState("");
   const [draft, setDraft] = useState<Record<string, Row>>({});
+  const [announcing, setAnnouncing] = useState(false);
 
   const hackathons = useQuery({
     queryKey: ["hackathons"],
@@ -91,6 +95,17 @@ export function ResultsPanel() {
     }
     toast.success("Result saved");
     void results.refetch();
+  }
+
+  async function announce() {
+    if (!hid || !user) return;
+    const title = hackathons.data?.find((h) => h.id === hid)?.title;
+    if (!title) return;
+    setAnnouncing(true);
+    const error = await announceResults(title, user.id);
+    setAnnouncing(false);
+    if (error) toast.error(error);
+    else toast.success("Members notified on the notice board");
   }
 
   async function uploadCertificate(userId: string, file: File) {
