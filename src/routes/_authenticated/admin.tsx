@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ADMIN_NAV, SECTION_KEYS, type SectionKey } from "@/lib/admin-nav";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
@@ -56,147 +57,25 @@ const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
 const DOMAIN = "@rgmcet.edu.in";
 
-type SectionKey =
-  | "members"
-  | "mail"
-  | "hackathons"
-  | "results"
-  | "insights"
-  | "playbook"
-  | "notices"
-  | "inbox"
-  | "access"
-  | "audit"
-  | "checks";
-
-type SectionDef = {
-  key: SectionKey;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  ownerOnly?: boolean;
-  render: (query?: string) => React.ReactNode;
+const RENDERERS: Record<SectionKey, (query?: string) => React.ReactNode> = {
+  members: (query) => <MembersPanel initialQuery={query} />,
+  mail: () => <MailPanel />,
+  inbox: () => <InboxPanel />,
+  hackathons: (query) => <HackathonsPanel initialQuery={query} />,
+  results: () => <ResultsPanel />,
+  insights: () => <InsightsPanel />,
+  playbook: () => <ResourcesPanel />,
+  notices: () => <NoticesPanel />,
+  access: () => <AccessPanel />,
+  audit: () => <AuditPanel />,
+  checks: () => <SystemChecksPanel />,
 };
 
-const NAV_GROUPS: { group: string; items: SectionDef[] }[] = [
-  {
-    group: "People",
-    items: [
-      {
-        key: "members",
-        label: "Members",
-        icon: Users,
-        title: "Members",
-        description: "Import students, review profiles, reset passwords and manage accounts.",
-        render: (query) => <MembersPanel initialQuery={query} />,
-      },
-      {
-        key: "mail",
-        label: "Mail",
-        icon: Mail,
-        title: "Mail",
-        description: "Send individual or bulk email to club members.",
-        ownerOnly: true,
-        render: () => <MailPanel />,
-      },
-      {
-        key: "inbox",
-        label: "Inbox",
-        icon: Inbox,
-        title: "Student inbox",
-        description: "Answer doubts students send from the Ask admin page.",
-        ownerOnly: true,
-        render: () => <InboxPanel />,
-      },
-    ],
-  },
-  {
-    group: "Events",
-    items: [
-      {
-        key: "hackathons",
-        label: "Hackathons",
-        icon: CalendarPlus,
-        title: "Hackathons",
-        description: "Create events, set team size and control registrations.",
-        render: (query) => <HackathonsPanel initialQuery={query} />,
-      },
-      {
-        key: "results",
-        label: "Results",
-        icon: Trophy,
-        title: "Results",
-        description: "Mark attendance, award placements and points.",
-        render: () => <ResultsPanel />,
-      },
-      {
-        key: "insights",
-        label: "Insights",
-        icon: BarChart3,
-        title: "Insights",
-        description: "Club statistics, turnout and top performers.",
-        render: () => <InsightsPanel />,
-      },
-    ],
-  },
-  {
-    group: "Content",
-    items: [
-      {
-        key: "playbook",
-        label: "Playbook",
-        icon: BookOpen,
-        title: "Playbook",
-        description: "Curate resources, templates and guides for members.",
-        render: () => <ResourcesPanel />,
-      },
-      {
-        key: "notices",
-        label: "Notices",
-        icon: Megaphone,
-        title: "Notice board",
-        description: "Post announcements, outside hackathons, links and polls.",
-        render: () => <NoticesPanel />,
-      },
-    ],
-  },
-  {
-    group: "Settings",
-    items: [
-      {
-        key: "access",
-        label: "Access",
-        icon: Lock,
-        title: "Access control",
-        description: "Decide who is allowed to create a Yuga Spark account.",
-        ownerOnly: true,
-        render: () => <AccessPanel />,
-      },
-      {
-        key: "audit",
-        label: "Audit log",
-        icon: ScrollText,
-        title: "Audit log",
-        description:
-          "Timestamped record of every student, hackathon, access and password change.",
-        ownerOnly: true,
-        render: () => <AuditPanel />,
-      },
-      {
-        key: "checks",
-        label: "System checks",
-        icon: Stethoscope,
-        title: "System checks",
-        description:
-          "Run quick validations for login, access, hackathon CRUD and certificate downloads.",
-        render: () => <SystemChecksPanel />,
-      },
-    ],
-  },
-];
-
 export const Route = createFileRoute("/_authenticated/admin")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const section = String(search['section'] ?? "");
+    return { section: (SECTION_KEYS as string[]).includes(section) ? (section as SectionKey) : undefined };
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -255,9 +134,13 @@ function AdminPage() {
 
 function AdminWorkspace() {
   const { isOwner } = useAuth();
-  const [active, setActive] = useState<SectionKey>("members");
+  const navigate = useNavigate();
+  const { section } = Route.useSearch();
+  const active: SectionKey = section ?? "members";
+  const setActive = (key: SectionKey) =>
+    navigate({ to: "/admin", search: { section: key }, replace: true });
   const [seed, setSeed] = useState<{ key: SectionKey; query: string } | null>(null);
-  const groups = NAV_GROUPS.map((g) => ({
+  const groups = ADMIN_NAV.map((g) => ({
     ...g,
     items: g.items.filter((i) => isOwner || !i.ownerOnly),
   })).filter((g) => g.items.length > 0);
@@ -280,37 +163,7 @@ function AdminWorkspace() {
         Find any student by name, registration number or email — or jump straight to a hackathon.
       </p>
     </div>
-    <div className="mt-4 grid gap-4 lg:grid-cols-[236px_minmax(0,1fr)] lg:gap-6 lg:items-start">
-      <nav className="surface sticky top-20 hidden overflow-hidden p-2 lg:block">
-        {groups.map((group) => (
-          <div key={group.group} className="mb-2 last:mb-0">
-            <p className="label-mono px-3 pb-1.5 pt-2 text-muted-foreground">{group.group}</p>
-            <ul className="space-y-0.5">
-              {group.items.map((item) => {
-                const ItemIcon = item.icon;
-                const isActive = item.key === current.key;
-                return (
-                  <li key={item.key}>
-                    <button
-                      type="button"
-                      onClick={() => setActive(item.key)}
-                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                      }`}
-                    >
-                      <ItemIcon className="h-4 w-4 shrink-0" />
-                      <span className="truncate font-medium">{item.label}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
-
+    <div className="mt-4">
       <div className="sticky top-14 z-20 -mx-4 border-y border-border bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
         <div className="-mx-1 flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {groups.map((group) => (
@@ -358,7 +211,7 @@ function AdminWorkspace() {
           </div>
         </header>
         <div key={`${current.key}-${query ?? ""}`} className="rise mt-4 sm:mt-5">
-          {current.render(query)}
+          {RENDERERS[current.key](query)}
         </div>
       </section>
     </div>
