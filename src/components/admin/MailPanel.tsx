@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendClubEmail } from "@/lib/email.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 type Audience = "all" | "complete" | "pending" | "hackathon";
 
 export function MailPanel() {
+  const queryClient = useQueryClient();
+  const send = useServerFn(sendClubEmail);
+  const [sending, setSending] = useState(false);
   const [audience, setAudience] = useState<Audience>("all");
   const [hid, setHid] = useState("");
   const [q, setQ] = useState("");
@@ -70,9 +75,53 @@ export function MailPanel() {
   }, [members.data, registrations.data, audience, q]);
 
   const selected = visible.filter((m) => picked[m.id]);
-  const recipients = (selected.length ? selected : visible)
-    .map((m) => (usePersonal && m.personal_email ? m.personal_email : m.email))
-    .filter(Boolean);
+  const targets = (selected.length ? selected : visible)
+    .map((m) => ({
+      email: (usePersonal && m.personal_email ? m.personal_email : m.email) ?? "",
+      name: m.full_name,
+    }))
+    .filter((t) => Boolean(t.email));
+  const recipients = targets.map((t) => t.email);
+
+  const settings = useQuery({
+    queryKey: ["email-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("key,value")
+        .in("key", ["email_from_name", "email_from_address", "email_reply_to"]);
+      if (error) throw new Error(error.message);
+      return Object.fromEntries(data.map((s) => [s.key, s.value])) as Record<string, string>;
+    },
+  });
+  const fromAddress = settings.data?.["email_from_address"] ?? "";
+
+  async function sendNow() {
+    if (!fromAddress) {
+      toast.error("Set a verified sender address first");
+      return;
+    }
+    if (targets.length === 0) {
+      toast.error("No recipients");
+      return;
+    }
+    setSending(true);
+    try {
+      const result = await send({
+        data: { subject, body, kind: "broadcast", recipients: targets },
+      });
+      if (result.failed > 0) {
+        toast.error(`${result.sent} sent, ${result.failed} failed. ${result.firstError ?? ""}`);
+      } else {
+        toast.success(`Delivered to ${result.sent} member(s)`);
+      }
+      void queryClient.invalidateQueries({ queryKey: ["email-logs"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Send failed");
+    } finally {
+      setSending(false);
+    }
+  }
 
   // Mail apps silently drop very long mailto links, so send in batches.
   const BATCH_SIZE = 40;
