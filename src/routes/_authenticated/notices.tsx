@@ -83,6 +83,7 @@ function NoticesPage() {
             const options = Array.isArray(n.options) ? (n.options as string[]) : [];
             const noticeVotes = (votes.data ?? []).filter((v) => v.notice_id === n.id);
             const mine = noticeVotes.find((v) => v.user_id === user?.id);
+            const closed = Boolean(n.expires_at && new Date(n.expires_at).getTime() < Date.now());
             return (
               <article key={n.id} className="surface p-6">
                 <div className="flex items-start justify-between gap-3">
@@ -120,12 +121,13 @@ function NoticesPage() {
                       return (
                         <button
                           key={i}
+                          disabled={closed}
                           onClick={() => vote(n.id, i)}
                           className={`relative w-full overflow-hidden rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
                             mine?.option_index === i
                               ? "border-primary bg-primary/5"
                               : "border-border hover:bg-secondary"
-                          }`}
+                          } ${closed ? "cursor-not-allowed opacity-70" : ""}`}
                         >
                           <span
                             className="absolute inset-y-0 left-0 bg-primary/10"
@@ -138,6 +140,9 @@ function NoticesPage() {
                         </button>
                       );
                     })}
+                    {closed ? (
+                      <p className="label-mono text-muted-foreground">Poll closed</p>
+                    ) : null}
                   </div>
                 ) : null}
               </article>
