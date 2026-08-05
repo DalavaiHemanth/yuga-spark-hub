@@ -508,6 +508,79 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
     return rows;
   })();
 
+  const selectedRows = visible.filter((m) => selected.includes(m.id));
+  const allVisibleSelected = visible.length > 0 && selectedRows.length === visible.length;
+
+  function toggleOne(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+
+  function toggleAllVisible() {
+    setSelected(allVisibleSelected ? [] : visible.map((m) => m.id));
+  }
+
+  async function bulkSetActive(active: boolean) {
+    if (selectedRows.length === 0) return;
+    setBulkBusy(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_active: active })
+      .in("id", selectedRows.map((m) => m.id));
+    setBulkBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(
+        `${selectedRows.length} member${selectedRows.length > 1 ? "s" : ""} ${active ? "activated" : "deactivated"}`,
+      );
+      setSelected([]);
+      await members.refetch();
+    }
+  }
+
+  async function bulkGrantAccess() {
+    if (selectedRows.length === 0) return;
+    setBulkBusy(true);
+    const list = selectedRows.map((m) => m.email.toLowerCase());
+    const { data: existing } = await supabase
+      .from("allowed_emails")
+      .select("email")
+      .in("email", list);
+    const have = new Set((existing ?? []).map((r) => r.email.toLowerCase()));
+    const rows = list.filter((e) => !have.has(e)).map((email) => ({ email }));
+    if (rows.length === 0) {
+      setBulkBusy(false);
+      toast.info("All selected members already have access");
+      return;
+    }
+    const { error } = await supabase.from("allowed_emails").insert(rows);
+    setBulkBusy(false);
+    if (error) toast.error(error.message);
+    else toast.success(`Access granted to ${rows.length} email${rows.length > 1 ? "s" : ""}`);
+  }
+
+  async function bulkResetPasswords() {
+    if (selectedRows.length === 0) return;
+    if (bulkPwd.trim().length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (!confirm(`Reset the password for ${selectedRows.length} member(s)?`)) return;
+    setBulkBusy(true);
+    let ok = 0;
+    const failed: string[] = [];
+    for (const m of selectedRows) {
+      try {
+        await adminSetPassword({ data: { userId: m.id, password: bulkPwd.trim() } });
+        ok += 1;
+      } catch {
+        failed.push(m.email);
+      }
+    }
+    setBulkBusy(false);
+    if (ok > 0) toast.success(`Password reset for ${ok} member${ok > 1 ? "s" : ""}`);
+    if (failed.length > 0) toast.error(`Failed for ${failed.length}: ${failed.slice(0, 3).join(", ")}`);
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
       <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
