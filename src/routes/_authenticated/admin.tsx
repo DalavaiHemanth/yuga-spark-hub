@@ -115,20 +115,15 @@ function AdminPage() {
 
   return (
     <AppShell wide>
-      <PageHeader
-        eyebrow="Club operations"
-        title="Admin console"
-        description="Members, mail, hackathons, results, insights, playbook, notices and the student inbox."
-        actions={
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            {profile?.full_name ?? profile?.email ?? "Admin"}
-            <Badge variant={isOwner ? "default" : "secondary"} className="text-[10px]">
-              {isOwner ? "owner" : "co-admin"}
-            </Badge>
-          </span>
-        }
-      />
+      <div className="mt-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{profile?.full_name ?? profile?.email ?? "Admin"}</span>
+          <Badge variant={isOwner ? "default" : "secondary"} className="text-[10px]">
+            {isOwner ? "owner" : "co-admin"}
+          </Badge>
+        </div>
+      </div>
       <AdminOverview />
       <AdminWorkspace />
     </AppShell>
