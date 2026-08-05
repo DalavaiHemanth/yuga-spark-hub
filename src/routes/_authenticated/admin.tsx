@@ -26,6 +26,7 @@ import {
   CalendarDays,
   MapPin,
   Upload,
+  ScrollText,
 } from "lucide-react";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
