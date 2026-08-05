@@ -86,6 +86,59 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          body: string | null
+          created_at: string
+          error: string | null
+          hackathon_id: string | null
+          id: string
+          kind: string
+          provider_id: string | null
+          recipient: string
+          recipient_name: string | null
+          sent_by: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          error?: string | null
+          hackathon_id?: string | null
+          id?: string
+          kind?: string
+          provider_id?: string | null
+          recipient: string
+          recipient_name?: string | null
+          sent_by?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          error?: string | null
+          hackathon_id?: string | null
+          id?: string
+          kind?: string
+          provider_id?: string | null
+          recipient?: string
+          recipient_name?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_hackathon_id_fkey"
+            columns: ["hackathon_id"]
+            isOneToOne: false
+            referencedRelation: "hackathons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hackathon_results: {
         Row: {
           attended: boolean

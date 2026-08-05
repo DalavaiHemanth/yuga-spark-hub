@@ -52,7 +52,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { announceHackathon } from "@/lib/notify";
+import { announceHackathon, emailAllMembers } from "@/lib/notify";
+import { EmailLogPanel } from "@/components/admin/EmailLogPanel";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -61,6 +62,7 @@ const DOMAIN = "@rgmcet.edu.in";
 const RENDERERS: Record<SectionKey, (query?: string) => React.ReactNode> = {
   members: (query) => <MembersPanel initialQuery={query} />,
   mail: () => <MailPanel />,
+  emaillog: () => <EmailLogPanel />,
   inbox: () => <InboxPanel />,
   hackathons: (query) => <HackathonsPanel initialQuery={query} />,
   results: () => <ResultsPanel />,
@@ -854,6 +856,31 @@ function HackathonsPanel({ initialQuery }: { initialQuery?: string | undefined }
       const noticeError = await announceHackathon(record, user.id);
       if (noticeError) toast.warning(`Published, but the notice failed: ${noticeError}`);
       else toast.success("Hackathon published and announced on the notice board");
+      const mail = await emailAllMembers({
+        subject: `New hackathon: ${record.title}`,
+        kind: "announcement",
+        body: [
+          `Hi {{first_name}},`,
+          `${record.title} is now open on Yuga Spark.`,
+          [
+            `Date: ${new Date(record.event_date).toDateString()}`,
+            record.start_time ? `Time: ${record.start_time.slice(0, 5)}` : null,
+            record.venue ? `Venue: ${record.venue}` : null,
+            `Mode: ${record.mode}`,
+            `Team size: ${record.team_min}–${record.team_max}`,
+            record.registration_deadline
+              ? `Register before: ${new Date(record.registration_deadline).toLocaleString()}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          `Sign in to your dashboard to register and find a squad.`,
+          `— Yuga Spark`,
+        ].join("\n\n"),
+      });
+      if (mail && !mail.skipped) {
+        toast.success(`Emailed ${mail.sent} member(s)${mail.failed ? `, ${mail.failed} failed` : ""}`);
+      }
       setForm({
         title: "",
         description: "",

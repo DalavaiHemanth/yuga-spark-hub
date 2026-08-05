@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { announceResults } from "@/lib/notify";
+import { announceResults, emailAttendees } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,9 +103,23 @@ export function ResultsPanel() {
     if (!title) return;
     setAnnouncing(true);
     const error = await announceResults(title, user.id);
-    setAnnouncing(false);
     if (error) toast.error(error);
     else toast.success("Members notified on the notice board");
+    const mail = await emailAttendees(
+      hid,
+      `Results out: ${title}`,
+      [
+        "Hi {{first_name}},",
+        `Results for ${title} are published.`,
+        "Placements and points are live on the leaderboard, and your certificate is ready to download from the Certificates page.",
+        "Thanks for taking part.",
+        "— Yuga Spark",
+      ].join("\n\n"),
+    );
+    setAnnouncing(false);
+    if (mail && !mail.skipped) {
+      toast.success(`Emailed ${mail.sent} attendee(s)${mail.failed ? `, ${mail.failed} failed` : ""}`);
+    }
   }
 
   async function uploadCertificate(userId: string, file: File) {

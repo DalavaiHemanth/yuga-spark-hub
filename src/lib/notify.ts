@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { sendClubEmail } from "@/lib/email.functions";
 
 /**
  * In-app notifications. Every member sees these on the notice board.
@@ -51,4 +52,58 @@ export async function announceResults(title: string, createdBy: string) {
     created_by: createdBy,
   });
   return error?.message ?? null;
+}
+
+async function senderConfigured() {
+  const { data } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", "email_from_address")
+    .maybeSingle();
+  return Boolean(data?.value?.trim());
+}
+
+type MailResult = { sent: number; failed: number; skipped?: string } | null;
+
+/** Emails every active member with a completed profile. Silently skips when no sender is set. */
+export async function emailAllMembers(args: {
+  subject: string;
+  body: string;
+  kind: "announcement" | "results";
+  hackathonId?: string | null;
+}): Promise<MailResult> {
+  if (!(await senderConfigured())) return { sent: 0, failed: 0, skipped: "no_sender" };
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email,full_name")
+    .eq("is_active", true);
+  if (error || !data?.length) return null;
+  return sendClubEmail({
+    data: {
+      subject: args.subject,
+      body: args.body,
+      kind: args.kind,
+      hackathonId: args.hackathonId ?? null,
+      recipients: data.map((p) => ({ email: p.email, name: p.full_name })),
+    },
+  });
+}
+
+/** Emails only the members who attended a hackathon (results notification). */
+export async function emailAttendees(hackathonId: string, subject: string, body: string): Promise<MailResult> {
+  if (!(await senderConfigured())) return { sent: 0, failed: 0, skipped: "no_sender" };
+  const { data, error } = await supabase
+    .from("hackathon_results")
+    .select("user_id, profiles:profiles!inner(email, full_name, is_active)")
+    .eq("hackathon_id", hackathonId)
+    .eq("attended", true);
+  if (error || !data?.length) return null;
+  const recipients = data
+    .map((r) => r.profiles as unknown as { email: string; full_name: string | null; is_active: boolean })
+    .filter((p) => p && p.is_active)
+    .map((p) => ({ email: p.email, name: p.full_name }));
+  if (recipients.length === 0) return null;
+  return sendClubEmail({
+    data: { subject, body, kind: "results", hackathonId, recipients },
+  });
 }

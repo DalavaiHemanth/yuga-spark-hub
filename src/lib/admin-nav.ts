@@ -10,11 +10,13 @@ import {
   Lock,
   ScrollText,
   Stethoscope,
+  Send,
 } from "lucide-react";
 
 export type SectionKey =
   | "members"
   | "mail"
+  | "emaillog"
   | "hackathons"
   | "results"
   | "insights"
@@ -28,6 +30,7 @@ export type SectionKey =
 export const SECTION_KEYS: SectionKey[] = [
   "members",
   "mail",
+  "emaillog",
   "inbox",
   "hackathons",
   "results",
@@ -65,6 +68,14 @@ export const ADMIN_NAV: { group: string; items: SectionMeta[] }[] = [
         icon: Mail,
         title: "Mail",
         description: "Send individual or bulk email to club members.",
+        ownerOnly: true,
+      },
+      {
+        key: "emaillog",
+        label: "Email log",
+        icon: Send,
+        title: "Email delivery log",
+        description: "Every announcement and results email the app sent, with delivery status.",
         ownerOnly: true,
       },
       {
