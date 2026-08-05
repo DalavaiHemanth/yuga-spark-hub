@@ -404,6 +404,9 @@ function HackathonsPanel() {
     end_time: "",
     team_min: 2,
     team_max: 4,
+    mode: "offline",
+    registration_deadline: "",
+    banner_url: "",
   });
   const [busy, setBusy] = useState(false);
 
@@ -436,6 +439,11 @@ function HackathonsPanel() {
       end_time: form.end_time || null,
       team_min: Number(form.team_min),
       team_max: Number(form.team_max),
+      mode: form.mode,
+      registration_deadline: form.registration_deadline
+        ? new Date(form.registration_deadline).toISOString()
+        : null,
+      banner_url: form.banner_url.trim() || null,
       created_by: user.id,
     });
     setBusy(false);
@@ -451,6 +459,9 @@ function HackathonsPanel() {
         end_time: "",
         team_min: 2,
         team_max: 4,
+        mode: "offline",
+        registration_deadline: "",
+        banner_url: "",
       });
       await hackathons.refetch();
     }
