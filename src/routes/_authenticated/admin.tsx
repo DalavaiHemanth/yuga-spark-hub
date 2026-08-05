@@ -6,7 +6,27 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { adminCreateStudents, adminDeleteUser, adminSetPassword } from "@/lib/club.functions";
-import { AppShell, PageHeader } from "@/components/AppShell";
+import { AppShell, PageHeader, EmptyState, StatCard } from "@/components/AppShell";
+import {
+  Users,
+  Mail,
+  CalendarPlus,
+  Trophy,
+  BarChart3,
+  BookOpen,
+  Megaphone,
+  Inbox,
+  Lock,
+  ShieldCheck,
+  KeyRound,
+  Trash2,
+  UserCheck,
+  UserX,
+  Pencil,
+  CalendarDays,
+  MapPin,
+  Upload,
+} from "lucide-react";
 import { ResultsPanel } from "@/components/admin/ResultsPanel";
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
 import { NoticesPanel } from "@/components/admin/NoticesPanel";
@@ -19,6 +39,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -37,7 +59,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -50,10 +72,11 @@ function AdminPage() {
   if (!isAdmin) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold">Admins only</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          This console is restricted to Yuga Spark club admins.
-        </p>
+        <EmptyState
+          icon={Lock}
+          title="Admins only"
+          description="This console is restricted to Yuga Spark club admins. If you think this is a mistake, message an admin from the Ask admin page."
+        />
       </AppShell>
     );
   }
@@ -64,18 +87,38 @@ function AdminPage() {
         eyebrow="Club operations"
         title="Admin console"
         description="Members, mail, hackathons, results, insights, playbook, notices and the student inbox."
+        actions={
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            {profile?.full_name ?? profile?.email ?? "Admin"}
+          </span>
+        }
       />
+      <AdminOverview />
       <Tabs defaultValue="members" className="mt-8">
-        <TabsList className="flex flex-wrap">
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="mail">Mail</TabsTrigger>
-          <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
-          <TabsTrigger value="playbook">Playbook</TabsTrigger>
-          <TabsTrigger value="notices">Notices</TabsTrigger>
-          <TabsTrigger value="inbox">Inbox</TabsTrigger>
-          <TabsTrigger value="access">Access</TabsTrigger>
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-xl border border-border bg-card p-1.5">
+          {(
+            [
+              ["members", "Members", Users],
+              ["mail", "Mail", Mail],
+              ["hackathons", "Hackathons", CalendarPlus],
+              ["results", "Results", Trophy],
+              ["insights", "Insights", BarChart3],
+              ["playbook", "Playbook", BookOpen],
+              ["notices", "Notices", Megaphone],
+              ["inbox", "Inbox", Inbox],
+              ["access", "Access", Lock],
+            ] as const
+          ).map(([value, label, Icon]) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="gap-1.5 rounded-lg px-3 py-1.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <TabsContent value="members" className="mt-6">
           <MembersPanel />
@@ -110,6 +153,44 @@ function AdminPage() {
 }
 
 function MembersPanel() {
+  return <MembersPanelInner />;
+}
+
+function AdminOverview() {
+  const stats = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const [members, hackathons, registrations, messages] = await Promise.all([
+        supabase.from("profiles").select("id,profile_completed,is_active"),
+        supabase.from("hackathons").select("id,event_date,registration_open"),
+        supabase.from("registrations").select("id"),
+        supabase.from("messages").select("id,from_admin"),
+      ]);
+      const profiles = members.data ?? [];
+      const events = hackathons.data ?? [];
+      const today = new Date().toISOString().slice(0, 10);
+      return {
+        members: profiles.length,
+        pending: profiles.filter((p) => !p.profile_completed).length,
+        upcoming: events.filter((e) => e.event_date >= today).length,
+        registrations: registrations.data?.length ?? 0,
+        questions: (messages.data ?? []).filter((m) => !m.from_admin).length,
+      };
+    },
+  });
+
+  const s = stats.data;
+  return (
+    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard label="Members" value={s?.members ?? "—"} hint={`${s?.pending ?? 0} profiles pending`} />
+      <StatCard label="Upcoming hackathons" value={s?.upcoming ?? "—"} hint="Visible to students now" />
+      <StatCard label="Registrations" value={s?.registrations ?? "—"} hint="Across all events" />
+      <StatCard label="Student questions" value={s?.questions ?? "—"} hint="Messages in the inbox" />
+    </div>
+  );
+}
+
+function MembersPanelInner() {
   const [emails, setEmails] = useState("");
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
@@ -196,35 +277,51 @@ function MembersPanel() {
   })();
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
-      <div className="space-y-6">
-        <div className="space-y-3 surface p-6">
-          <h2 className="label-mono text-muted-foreground">Add members</h2>
-          <p className="text-xs text-muted-foreground">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <div className="surface p-5">
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Users className="h-4 w-4" />
+            </span>
+            <h2 className="font-display text-sm font-bold">Add members</h2>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             One roll number or email per line. Bare roll numbers get {DOMAIN} appended. Default
-            password: <span className="font-mono text-foreground">yugaspark123</span>
+            password{" "}
+            <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground">
+              yugaspark123
+            </span>
           </p>
           <Textarea
+            className="mt-3"
             rows={6}
             value={emails}
             placeholder={`21091A0501\nsomeone${DOMAIN}`}
             onChange={(e) => setEmails(e.target.value)}
           />
           <Button
+            className="mt-3 w-full"
             disabled={busy}
             onClick={() => createFromList(emails.split(/[\n,;\s]+/).map(normalize))}
           >
             {busy ? "Working…" : "Create accounts"}
           </Button>
-        </div>
 
-        <div className="space-y-3 surface p-6">
-          <h2 className="label-mono text-muted-foreground">Bulk import from Excel</h2>
-          <Label htmlFor="sheet" className="text-xs text-muted-foreground">
+          <Separator className="my-5" />
+
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Upload className="h-4 w-4" />
+            </span>
+            <h2 className="font-display text-sm font-bold">Bulk import</h2>
+          </div>
+          <Label htmlFor="sheet" className="mt-3 block text-xs font-normal text-muted-foreground">
             Any .xlsx/.csv — only email-like cells are used.
           </Label>
           <Input
             id="sheet"
+            className="mt-2"
             type="file"
             accept=".xlsx,.xls,.csv"
             disabled={busy}
@@ -236,56 +333,64 @@ function MembersPanel() {
         </div>
       </div>
 
-      <div className="surface">
-        <div className="space-y-3 border-b border-border px-5 py-4">
+      <div className="surface overflow-hidden">
+        <div className="space-y-3 border-b border-border bg-secondary/30 px-5 py-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="label-mono text-muted-foreground">
-              Members ({visible.length}/{members.data?.length ?? 0})
-            </h2>
+            <h2 className="font-display text-sm font-bold">Members</h2>
+            <Badge variant="secondary" className="font-mono text-[11px]">
+              {visible.length}/{members.data?.length ?? 0}
+            </Badge>
           </div>
           <Input
+            className="bg-background"
             value={q}
             placeholder="Search name, email, roll number, year…"
             onChange={(e) => setQ(e.target.value)}
           />
-          <div className="flex flex-wrap gap-2">
-            {(["all", "complete", "pending", "inactive"] as const).map((f) => (
-              <Button
-                key={f}
-                size="sm"
-                variant={filter === f ? "default" : "outline"}
-                onClick={() => setFilter(f)}
-                className="capitalize"
-              >
-                {f}
-              </Button>
-            ))}
-            <span className="ml-auto flex gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+              {(["all", "complete", "pending", "inactive"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                    filter === f
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <div className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <span>Sort</span>
               {(["recent", "name", "year"] as const).map((s) => (
-                <Button
+                <button
                   key={s}
-                  size="sm"
-                  variant={sort === s ? "secondary" : "ghost"}
                   onClick={() => setSort(s)}
-                  className="capitalize"
+                  className={`rounded-md px-2 py-1 capitalize transition-colors ${
+                    sort === s ? "bg-secondary font-medium text-foreground" : "hover:text-foreground"
+                  }`}
                 >
                   {s}
-                </Button>
+                </button>
               ))}
-            </span>
+            </div>
           </div>
         </div>
-        <ul className="divide-y divide-border">
+        <ul className="max-h-[720px] divide-y divide-border overflow-y-auto">
           {visible.map((m) => (
             <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
           ))}
           {visible.length === 0 ? (
-            <li className="px-5 py-8 text-center">
-              <p className="font-display text-sm font-bold">No members match this view</p>
-              <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
-                Add members one by one with the form above, or bulk import an Excel sheet of
-                register numbers — emails are generated automatically.
-              </p>
+            <li className="p-5">
+              <EmptyState
+                tone="quiet"
+                icon={Users}
+                title="No members match this view"
+                description="Add members with the form on the left, or bulk import an Excel sheet of register numbers."
+              />
             </li>
           ) : null}
         </ul>
@@ -313,35 +418,54 @@ type MemberRowProps = {
 function MemberRow({ member, onChanged }: MemberRowProps) {
   const [pwd, setPwd] = useState("");
   const [open, setOpen] = useState(false);
+  const initials = (member.full_name ?? member.email)
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
-    <li className="px-5 py-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate text-sm font-medium">
-            {member.full_name ?? "Unnamed member"}
-            {!member.is_active ? (
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                inactive
+    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <p className="truncate text-sm font-medium">{member.full_name ?? "Unnamed member"}</p>
+              <Badge variant={member.profile_completed ? "secondary" : "outline"} className="text-[10px]">
+                {member.profile_completed ? "complete" : "pending"}
+              </Badge>
+              {!member.is_active ? (
+                <Badge variant="destructive" className="text-[10px]">
+                  inactive
+                </Badge>
+              ) : null}
+            </div>
+            <p className="truncate font-mono text-xs text-muted-foreground">{member.email}</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              {member.registration_number ?? "no reg no."} · {member.year ?? "year not set"}
+              {member.personal_email ? ` · ${member.personal_email}` : ""}
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+              <span className="rounded bg-secondary px-1.5 py-0.5">
+                photo {member.photo_url ? "✓" : "—"}
               </span>
-            ) : null}
-          </p>
-          <p className="font-mono text-xs text-muted-foreground">{member.email}</p>
-          <p className="label-mono mt-1 text-muted-foreground">
-            {member.registration_number ?? "no reg"} · {member.year ?? "no year"} ·{" "}
-            {member.profile_completed ? "profile complete" : "profile pending"}
-          </p>
-          {member.personal_email ? (
-            <p className="label-mono text-muted-foreground">{member.personal_email}</p>
-          ) : null}
-          <p className="label-mono text-muted-foreground">
-            photo {member.photo_url ? "✓" : "—"} · resume {member.resume_url ? "✓" : "—"}
-          </p>
+              <span className="rounded bg-secondary px-1.5 py-0.5">
+                resume {member.resume_url ? "✓" : "—"}
+              </span>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-1">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
+            title={member.is_active ? "Deactivate member" : "Activate member"}
+            className="gap-1.5 text-xs"
             onClick={async () => {
               const { error } = await supabase
                 .from("profiles")
@@ -354,14 +478,23 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
               }
             }}
           >
+            {member.is_active ? <UserX className="h-3.5 w-3.5" /> : <UserCheck className="h-3.5 w-3.5" />}
             {member.is_active ? "Deactivate" : "Activate"}
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="gap-1.5 text-xs"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <KeyRound className="h-3.5 w-3.5" />
             Password
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            aria-label="Delete member"
             onClick={async () => {
               if (!confirm(`Delete ${member.email}? This cannot be undone.`)) return;
               try {
@@ -373,13 +506,13 @@ function MemberRow({ member, onChanged }: MemberRowProps) {
               }
             }}
           >
-            Delete
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
       {open ? (
         <form
-          className="mt-3 flex gap-2"
+          className="mt-3 flex gap-2 rounded-lg border border-border bg-secondary/40 p-2"
           onSubmit={async (e) => {
             e.preventDefault();
             try {
@@ -485,8 +618,13 @@ function HackathonsPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form onSubmit={create} className="space-y-4 surface p-6">
-        <h2 className="label-mono text-muted-foreground">New hackathon</h2>
+      <form onSubmit={create} className="surface space-y-4 p-6 lg:sticky lg:top-20 lg:self-start">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+            <CalendarPlus className="h-4 w-4" />
+          </span>
+          <h2 className="font-display text-sm font-bold">New hackathon</h2>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
           <Input
@@ -601,23 +739,36 @@ function HackathonsPanel() {
             onChange={(e) => setForm({ ...form, banner_url: e.target.value })}
           />
         </div>
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" className="w-full" disabled={busy}>
           {busy ? "Publishing…" : "Publish hackathon"}
         </Button>
       </form>
 
-      <div className="surface">
-        <div className="border-b border-border px-5 py-3">
-          <h2 className="label-mono text-muted-foreground">
-            All hackathons ({hackathons.data?.length ?? 0})
-          </h2>
+      <div className="surface overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-5 py-3.5">
+          <h2 className="font-display text-sm font-bold">All hackathons</h2>
+          <Badge variant="secondary" className="font-mono text-[11px]">
+            {hackathons.data?.length ?? 0}
+          </Badge>
         </div>
         <ul className="divide-y divide-border">
           {(hackathons.data ?? []).map((h) => (
             <HackathonRow key={h.id} hackathon={h} onChanged={() => hackathons.refetch()} />
           ))}
           {hackathons.data?.length === 0 ? (
-            <li className="px-5 py-6 text-sm text-muted-foreground">No hackathons yet.</li>
+            <li className="p-5">
+              <EmptyState
+                tone="quiet"
+                icon={CalendarDays}
+                title="No hackathons yet"
+                description="Publish your first event — it appears on every member's dashboard instantly."
+                steps={[
+                  "Fill in the title, date and timings on the left",
+                  "Set the team size range students must form squads within",
+                  "Publish — registrations open right away",
+                ]}
+              />
+            </li>
           ) : null}
         </ul>
       </div>
@@ -685,17 +836,30 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
   }
 
   return (
-    <li className="px-5 py-4">
+    <li className="px-5 py-4 transition-colors hover:bg-secondary/30">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium">{h.title}</p>
-          <p className="label-mono text-muted-foreground">
-            {new Date(h.event_date).toLocaleDateString()} · teams {h.team_min}–{h.team_max} ·{" "}
-            {h.mode}
-          </p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{h.title}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {new Date(h.event_date).toLocaleDateString()}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              {h.venue ?? "venue TBA"}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              {h.team_min}–{h.team_max}
+            </span>
+            <Badge variant="outline" className="text-[10px] capitalize">
+              {h.mode}
+            </Badge>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="label-mono text-muted-foreground">Reg</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs text-muted-foreground">Reg</span>
           <Switch
             checked={h.registration_open}
             onCheckedChange={async (v) => {
@@ -707,12 +871,15 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
               else onChanged();
             }}
           />
-          <Button size="sm" variant="secondary" onClick={() => setEdit((v) => !v)}>
+          <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setEdit((v) => !v)}>
+            <Pencil className="h-3.5 w-3.5" />
             {edit ? "Cancel" : "Edit"}
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            aria-label="Delete hackathon"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={async () => {
               if (!confirm(`Delete "${h.title}"?`)) return;
               const { error } = await supabase.from("hackathons").delete().eq("id", h.id);
@@ -720,12 +887,12 @@ function HackathonRow({ hackathon: h, onChanged }: HackathonRowProps) {
               else onChanged();
             }}
           >
-            Delete
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
       {edit ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 rounded-lg border border-border bg-secondary/40 p-3 sm:grid-cols-2">
           <Input
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
@@ -798,11 +965,21 @@ function AccessPanelInner() {
   const open = setting.data === "open";
 
   return (
-    <div className="max-w-xl space-y-4 surface p-6">
-      <h2 className="label-mono text-muted-foreground">Who can join the club portal</h2>
-      <div className="flex items-center justify-between gap-6">
+    <div className="surface max-w-xl space-y-4 p-6">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+          <Lock className="h-4 w-4" />
+        </span>
+        <h2 className="font-display text-sm font-bold">Who can join the club portal</h2>
+      </div>
+      <div className="flex items-center justify-between gap-6 rounded-lg border border-border bg-secondary/40 p-4">
         <div>
-          <p className="text-sm font-medium">{open ? "Open to any email" : "Invite-only"}</p>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            {open ? "Open to any email" : "Invite-only"}
+            <Badge variant={open ? "secondary" : "default"} className="text-[10px]">
+              {open ? "open" : "restricted"}
+            </Badge>
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
             {open
               ? "Anyone with any email address can create an account."
