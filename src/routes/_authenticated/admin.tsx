@@ -641,7 +641,15 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
       <div className="surface overflow-hidden">
         <div className="space-y-3 border-b border-border bg-secondary/30 px-4 py-4 sm:px-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-sm font-bold">Members</h2>
+            <label className="flex min-w-0 items-center gap-2">
+              <Checkbox
+                checked={allVisibleSelected}
+                onCheckedChange={toggleAllVisible}
+                aria-label="Select all visible members"
+                disabled={visible.length === 0}
+              />
+              <span className="font-display text-sm font-bold">Members</span>
+            </label>
             <Badge variant="secondary" className="font-mono text-[11px]">
               {visible.length}/{members.data?.length ?? 0}
             </Badge>
@@ -684,9 +692,79 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
             </div>
           </div>
         </div>
+        {selectedRows.length > 0 ? (
+          <div className="space-y-3 border-b border-border bg-primary/5 px-4 py-3 sm:px-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="text-[11px]">{selectedRows.length} selected</Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkSetActive(true)}
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Activate
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkSetActive(false)}
+              >
+                <UserX className="h-3.5 w-3.5" />
+                Deactivate
+              </Button>
+              {isOwner ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs"
+                  disabled={bulkBusy}
+                  onClick={() => void bulkGrantAccess()}
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Assign access
+                </Button>
+              ) : null}
+              <button
+                type="button"
+                className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setSelected([])}
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                className="bg-background sm:max-w-56"
+                value={bulkPwd}
+                minLength={6}
+                placeholder="New password"
+                onChange={(e) => setBulkPwd(e.target.value)}
+              />
+              <Button
+                size="sm"
+                className="gap-1.5 text-xs"
+                disabled={bulkBusy}
+                onClick={() => void bulkResetPasswords()}
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                {bulkBusy ? "Working…" : `Reset ${selectedRows.length} password${selectedRows.length > 1 ? "s" : ""}`}
+              </Button>
+            </div>
+          </div>
+        ) : null}
         <ul className="max-h-[560px] divide-y divide-border overflow-y-auto sm:max-h-[720px]">
           {visible.map((m) => (
-            <MemberRow key={m.id} member={m} onChanged={() => members.refetch()} />
+            <MemberRow
+              key={m.id}
+              member={m}
+              selected={selected.includes(m.id)}
+              onToggle={() => toggleOne(m.id)}
+              onChanged={() => members.refetch()}
+            />
           ))}
           {visible.length === 0 ? (
             <li className="p-5">
