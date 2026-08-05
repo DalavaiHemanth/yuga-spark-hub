@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { Countdown } from "@/components/Countdown";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -113,6 +114,10 @@ function Dashboard() {
   const past = list.filter((h) => new Date(h.event_date).getTime() < now - 864e5);
   const results = myResults.data ?? [];
   const points = results.reduce((a, r) => a + (r.points ?? 0), 0);
+  const next = upcoming[0];
+  const nextStart = next
+    ? `${next.event_date}T${next.start_time ? next.start_time.slice(0, 8) : "09:00:00"}`
+    : null;
 
   const stats = [
     { k: "Upcoming events", v: upcoming.length },
@@ -148,6 +153,29 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      {next ? (
+        <section className="surface mt-6 flex flex-wrap items-end justify-between gap-6 p-6">
+          <div>
+            <p className="label-mono text-muted-foreground">Next hackathon</p>
+            <h2 className="mt-1 font-display text-2xl font-bold">{next.title}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {new Date(next.event_date).toLocaleDateString(undefined, {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
+              })}
+              {next.venue ? ` · ${next.venue}` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-8">
+            <Countdown target={nextStart} label="Starts in" size="lg" />
+            {next.registration_deadline ? (
+              <Countdown target={next.registration_deadline} label="Registration closes in" size="lg" />
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {!isAdmin ? (
         <section className="mt-10">
