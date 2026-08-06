@@ -33,7 +33,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import { Stethoscope } from "lucide-react";
-import { AdminSearch, type SearchHit } from "@/components/admin/AdminSearch";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
