@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldsSkeleton, IndeterminateBar } from "@/components/admin/Skeletons";
 
 const KEYS = ["email_from_name", "email_from_address", "email_reply_to"] as const;
 
@@ -66,6 +67,11 @@ export function SenderSettings() {
         The address must belong to a domain you verified with your email provider, otherwise
         delivery is rejected.
       </p>
+      {settings.isLoading ? (
+        <div className="mt-3">
+          <FieldsSkeleton fields={3} />
+        </div>
+      ) : (
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="from-name" className="text-xs">
@@ -101,7 +107,13 @@ export function SenderSettings() {
           />
         </div>
       </div>
-      <Button size="sm" className="mt-3" onClick={save} disabled={busy}>
+      )}
+      {busy ? (
+        <div className="mt-3">
+          <IndeterminateBar label="Saving sender…" />
+        </div>
+      ) : null}
+      <Button size="sm" className="mt-3" onClick={save} disabled={busy || settings.isLoading}>
         {busy ? "Saving…" : "Save sender"}
       </Button>
     </div>

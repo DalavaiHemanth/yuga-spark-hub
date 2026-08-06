@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SenderSettings } from "@/components/admin/SenderSettings";
+import { IndeterminateBar, RowsSkeleton } from "@/components/admin/Skeletons";
 
 function StatusPill({ status }: { status: string }) {
   const verified = status === "verified";
@@ -179,14 +180,32 @@ export function DomainPanel() {
           <Button
             size="sm"
             variant="outline"
+            disabled={domains.isFetching}
             onClick={() => void queryClient.invalidateQueries({ queryKey: ["sender-domains"] })}
           >
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${domains.isFetching ? "animate-spin" : ""}`} />
+            {domains.isFetching ? "Refreshing…" : "Refresh"}
           </Button>
         </div>
 
+        {(addMutation.isPending || verifyMutation.isPending || removeMutation.isPending) ? (
+          <div className="mt-3">
+            <IndeterminateBar
+              label={
+                addMutation.isPending
+                  ? "Registering domain…"
+                  : verifyMutation.isPending
+                    ? "Checking DNS records…"
+                    : "Removing domain…"
+              }
+            />
+          </div>
+        ) : null}
+
         {domains.isLoading ? (
-          <p className="mt-4 text-sm text-muted-foreground">Loading domains…</p>
+          <div className="mt-4 rounded-lg border border-border">
+            <RowsSkeleton rows={2} />
+          </div>
         ) : domains.error ? (
           <p className="mt-4 text-sm text-destructive">
             {domains.error instanceof Error ? domains.error.message : "Could not load domains"}
