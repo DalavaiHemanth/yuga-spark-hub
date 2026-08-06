@@ -44,16 +44,31 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { announceHackathon, emailAllMembers } from "@/lib/notify";
 
-const MailPanel = lazy(() => import("@/components/admin/MailPanel").then((module) => ({ default: module.MailPanel })));
-const EmailLogPanel = lazy(() => import("@/components/admin/EmailLogPanel").then((module) => ({ default: module.EmailLogPanel })));
-const DomainPanel = lazy(() => import("@/components/admin/DomainPanel").then((module) => ({ default: module.DomainPanel })));
-const InboxPanel = lazy(() => import("@/components/admin/InboxPanel").then((module) => ({ default: module.InboxPanel })));
+const loadMailPanel = () => import("@/components/admin/MailPanel");
+const loadEmailLogPanel = () => import("@/components/admin/EmailLogPanel");
+const loadDomainPanel = () => import("@/components/admin/DomainPanel");
+const loadInboxPanel = () => import("@/components/admin/InboxPanel");
+const MailPanel = lazy(() => loadMailPanel().then((module) => ({ default: module.MailPanel })));
+const EmailLogPanel = lazy(() => loadEmailLogPanel().then((module) => ({ default: module.EmailLogPanel })));
+const DomainPanel = lazy(() => loadDomainPanel().then((module) => ({ default: module.DomainPanel })));
+const InboxPanel = lazy(() => loadInboxPanel().then((module) => ({ default: module.InboxPanel })));
 const ResultsPanel = lazy(() => import("@/components/admin/ResultsPanel").then((module) => ({ default: module.ResultsPanel })));
 const InsightsPanel = lazy(() => import("@/components/admin/InsightsPanel").then((module) => ({ default: module.InsightsPanel })));
 const ResourcesPanel = lazy(() => import("@/components/admin/ResourcesPanel").then((module) => ({ default: module.ResourcesPanel })));
 const NoticesPanel = lazy(() => import("@/components/admin/NoticesPanel").then((module) => ({ default: module.NoticesPanel })));
 const AuditPanel = lazy(() => import("@/components/admin/AuditPanel").then((module) => ({ default: module.AuditPanel })));
 const SystemChecksPanel = lazy(() => import("@/components/admin/SystemChecksPanel").then((module) => ({ default: module.SystemChecksPanel })));
+
+const FAST_PANEL_LOADERS: Partial<Record<SectionKey, () => Promise<unknown>>> = {
+  mail: loadMailPanel,
+  emaillog: loadEmailLogPanel,
+  domains: loadDomainPanel,
+  inbox: loadInboxPanel,
+};
+
+function preloadFastPanel(key: SectionKey) {
+  void FAST_PANEL_LOADERS[key]?.();
+}
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
@@ -140,6 +155,17 @@ function AdminWorkspace() {
   const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
 
+  useEffect(() => {
+    const preload = () => {
+      preloadFastPanel("mail");
+      preloadFastPanel("emaillog");
+      preloadFastPanel("domains");
+      preloadFastPanel("inbox");
+    };
+    const timer = window.setTimeout(preload, 400);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <>
       <div className="mt-4">
@@ -158,6 +184,8 @@ function AdminWorkspace() {
                     key={item.key}
                     type="button"
                     onClick={() => setActive(item.key)}
+                    onPointerEnter={() => preloadFastPanel(item.key)}
+                    onFocus={() => preloadFastPanel(item.key)}
                     aria-current={isActive ? "page" : undefined}
                     className={`inline-flex min-h-9 shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                       isActive
@@ -189,7 +217,7 @@ function AdminWorkspace() {
             </p>
           </div>
         </header>
-        <div key={current.key} className="rise mt-4 sm:mt-5">
+        <div className="rise mt-4 sm:mt-5">
           {RENDERERS[current.key](undefined)}
         </div>
       </section>
