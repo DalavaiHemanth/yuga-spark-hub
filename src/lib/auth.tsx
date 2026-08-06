@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signOut: async () => {
       await supabase.auth.signOut();
+      clearAuthGateCache();
       setProfile(null);
       setIsAdmin(false);
       setIsOwner(false);
