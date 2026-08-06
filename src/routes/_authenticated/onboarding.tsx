@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { uploadUserFile } from "@/lib/storage";
-import { clearAuthGateCache } from "@/routes/_authenticated/route";
+import { clearAuthGateCache } from "@/lib/auth-gate";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
