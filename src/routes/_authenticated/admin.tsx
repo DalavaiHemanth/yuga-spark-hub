@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ADMIN_NAV, SECTION_KEYS, type SectionKey } from "@/lib/admin-nav";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -33,16 +33,8 @@ import {
   ScrollText,
 } from "lucide-react";
 import { Stethoscope } from "lucide-react";
-import { SystemChecksPanel } from "@/components/admin/SystemChecksPanel";
 import { AdminSearch, type SearchHit } from "@/components/admin/AdminSearch";
-import { ResultsPanel } from "@/components/admin/ResultsPanel";
-import { ResourcesPanel } from "@/components/admin/ResourcesPanel";
-import { NoticesPanel } from "@/components/admin/NoticesPanel";
-import { InboxPanel } from "@/components/admin/InboxPanel";
-import { MailPanel } from "@/components/admin/MailPanel";
-import { InsightsPanel } from "@/components/admin/InsightsPanel";
 import { Button } from "@/components/ui/button";
-import { AuditPanel } from "@/components/admin/AuditPanel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,27 +43,40 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { announceHackathon, emailAllMembers } from "@/lib/notify";
-import { EmailLogPanel } from "@/components/admin/EmailLogPanel";
-import { DomainPanel } from "@/components/admin/DomainPanel";
+
+const MailPanel = lazy(() => import("@/components/admin/MailPanel").then((module) => ({ default: module.MailPanel })));
+const EmailLogPanel = lazy(() => import("@/components/admin/EmailLogPanel").then((module) => ({ default: module.EmailLogPanel })));
+const DomainPanel = lazy(() => import("@/components/admin/DomainPanel").then((module) => ({ default: module.DomainPanel })));
+const InboxPanel = lazy(() => import("@/components/admin/InboxPanel").then((module) => ({ default: module.InboxPanel })));
+const ResultsPanel = lazy(() => import("@/components/admin/ResultsPanel").then((module) => ({ default: module.ResultsPanel })));
+const InsightsPanel = lazy(() => import("@/components/admin/InsightsPanel").then((module) => ({ default: module.InsightsPanel })));
+const ResourcesPanel = lazy(() => import("@/components/admin/ResourcesPanel").then((module) => ({ default: module.ResourcesPanel })));
+const NoticesPanel = lazy(() => import("@/components/admin/NoticesPanel").then((module) => ({ default: module.NoticesPanel })));
+const AuditPanel = lazy(() => import("@/components/admin/AuditPanel").then((module) => ({ default: module.AuditPanel })));
+const SystemChecksPanel = lazy(() => import("@/components/admin/SystemChecksPanel").then((module) => ({ default: module.SystemChecksPanel })));
 
 const TITLE = "Admin console — Yuga Spark";
 const DESCRIPTION = "Manage Yuga Spark members, hackathons and club access settings.";
 const DOMAIN = "@rgmcet.edu.in";
 
+function deferred(panel: React.ReactNode) {
+  return <Suspense fallback={<div className="surface h-40 animate-pulse bg-muted/40" />}>{panel}</Suspense>;
+}
+
 const RENDERERS: Record<SectionKey, (query?: string) => React.ReactNode> = {
   members: (query) => <MembersPanel initialQuery={query} />,
-  mail: () => <MailPanel />,
-  emaillog: () => <EmailLogPanel />,
-  domains: () => <DomainPanel />,
-  inbox: () => <InboxPanel />,
+  mail: () => deferred(<MailPanel />),
+  emaillog: () => deferred(<EmailLogPanel />),
+  domains: () => deferred(<DomainPanel />),
+  inbox: () => deferred(<InboxPanel />),
   hackathons: (query) => <HackathonsPanel initialQuery={query} />,
-  results: () => <ResultsPanel />,
-  insights: () => <InsightsPanel />,
-  playbook: () => <ResourcesPanel />,
-  notices: () => <NoticesPanel />,
+  results: () => deferred(<ResultsPanel />),
+  insights: () => deferred(<InsightsPanel />),
+  playbook: () => deferred(<ResourcesPanel />),
+  notices: () => deferred(<NoticesPanel />),
   access: () => <AccessPanel />,
-  audit: () => <AuditPanel />,
-  checks: () => <SystemChecksPanel />,
+  audit: () => deferred(<AuditPanel />),
+  checks: () => deferred(<SystemChecksPanel />),
 };
 
 export const Route = createFileRoute("/_authenticated/admin")({
