@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { clearAuthGateCache } from "@/lib/auth-gate";
+import { clearAuthGateCache, loadAuthGate } from "@/lib/auth-gate";
 
 export type Profile = {
   id: string;
@@ -35,32 +35,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const load = async (uid: string | undefined) => {
+  const load = async (uid: string | undefined, force = false) => {
     if (!uid) {
       setProfile(null);
       setIsAdmin(false);
       setIsOwner(false);
       return;
     }
-    const [{ data: p }, { data: roles }, { data: owner }] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase.rpc("is_owner", { _user_id: uid }),
-    ]);
-    setProfile((p as Profile) ?? null);
-    setIsAdmin(Boolean(roles?.some((r) => r.role === "admin")));
-    setIsOwner(Boolean(owner));
+    const gate = await loadAuthGate(uid, force);
+    setProfile((gate.profile as Profile | null) ?? null);
+    setIsAdmin(gate.isAdmin);
+    setIsOwner(gate.isOwner);
   };
 
   useEffect(() => {
     let active = true;
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    let initialized = false;
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!active) return;
+      if (event === "INITIAL_SESSION") {
+        initialized = true;
+      } else if (!initialized) {
+        return;
+      }
       setSession(s);
       void load(s?.user?.id).then(() => setLoading(false));
     });
     void supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
+      if (initialized) return;
+      initialized = true;
       setSession(data.session);
       await load(data.session?.user?.id);
       setLoading(false);
@@ -79,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAdmin,
     isOwner,
     refresh: async () => {
-      await load(session?.user?.id);
+      await load(session?.user?.id, true);
     },
     signOut: async () => {
       await supabase.auth.signOut();

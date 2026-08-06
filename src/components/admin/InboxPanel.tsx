@@ -40,14 +40,16 @@ export function InboxPanel() {
 
   const messages = useQuery({
     queryKey: ["admin-messages"],
-    refetchInterval: 10000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("messages")
-        .select("*")
-        .order("created_at", { ascending: true });
+        .select("id,student_id,sender_id,from_admin,body,created_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw new Error(error.message);
-      return data;
+      return data.reverse();
     },
   });
 

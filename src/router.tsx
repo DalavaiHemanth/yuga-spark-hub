@@ -7,8 +7,8 @@ export const getRouter = () => {
     defaultOptions: {
       queries: {
         // Avoid refetching the same club data on every navigation/tab focus.
-        staleTime: 60_000,
-        gcTime: 5 * 60_000,
+        staleTime: 5 * 60_000,
+        gcTime: 30 * 60_000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         retry: 1,
@@ -21,7 +21,7 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreload: "intent",
-    defaultPreloadStaleTime: 30_000,
+    defaultPreloadStaleTime: 0,
   });
 
   return router;

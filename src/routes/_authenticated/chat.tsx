@@ -32,15 +32,17 @@ function ChatPage() {
   const messages = useQuery({
     queryKey: ["messages", user?.id],
     enabled: Boolean(user?.id),
-    refetchInterval: 8000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("messages")
-        .select("*")
+        .select("id,student_id,sender_id,from_admin,body,created_at")
         .eq("student_id", user!.id)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw new Error(error.message);
-      return data;
+      return data.reverse();
     },
   });
 
