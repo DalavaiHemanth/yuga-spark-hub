@@ -77,6 +77,7 @@ function Onboarding() {
         })
         .eq("id", user.id);
       if (error) throw new Error(error.message);
+      clearAuthGateCache();
       await refresh();
       toast.success("Profile saved — your badge is ready");
       navigate({ to: "/badge", replace: true });
