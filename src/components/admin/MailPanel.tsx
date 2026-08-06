@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { IndeterminateBar, RowsSkeleton } from "@/components/admin/Skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Audience = "all" | "complete" | "pending" | "hackathon";
 
@@ -203,9 +205,13 @@ export function MailPanel() {
           ) : null}
           <Input value={q} placeholder="Search members…" onChange={(e) => setQ(e.target.value)} />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              {selected.length ? `${selected.length} selected` : `${visible.length} in this list`}
-            </span>
+            {members.isLoading ? (
+              <Skeleton className="h-3 w-28" />
+            ) : (
+              <span>
+                {selected.length ? `${selected.length} selected` : `${visible.length} in this list`}
+              </span>
+            )}
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -223,7 +229,14 @@ export function MailPanel() {
           </div>
         </div>
         <ul className="max-h-[420px] divide-y divide-border overflow-y-auto">
-          {visible.map((m) => (
+          {members.isLoading || registrations.isLoading ? (
+            <li>
+              <RowsSkeleton rows={6} />
+            </li>
+          ) : null}
+          {members.isLoading || registrations.isLoading
+            ? null
+            : visible.map((m) => (
             <li key={m.id} className="flex items-center gap-3 px-4 py-3 sm:px-5">
               <Checkbox
                 checked={Boolean(picked[m.id])}
@@ -237,7 +250,7 @@ export function MailPanel() {
               </div>
             </li>
           ))}
-          {visible.length === 0 ? (
+          {!members.isLoading && !registrations.isLoading && visible.length === 0 ? (
             <li className="px-5 py-6 text-sm text-muted-foreground">Nobody matches this filter.</li>
           ) : null}
         </ul>
@@ -268,11 +281,16 @@ export function MailPanel() {
           </p>
         </div>
         <div className="space-y-3">
+          {sending ? (
+            <IndeterminateBar label={`Delivering to ${recipients.length} recipient(s)…`} />
+          ) : null}
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={sendNow} disabled={sending || !fromAddress}>
+            <Button onClick={sendNow} disabled={sending || settings.isLoading || !fromAddress}>
               {sending ? "Sending…" : `Send now (${recipients.length})`}
             </Button>
-            {fromAddress ? (
+            {settings.isLoading ? (
+              <Skeleton className="h-3 w-40" />
+            ) : fromAddress ? (
               <span className="text-xs text-muted-foreground">from {fromAddress}</span>
             ) : (
               <span className="text-xs text-destructive">
