@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { uploadUserFile } from "@/lib/storage";
+import { clearAuthGateCache } from "@/lib/auth-gate";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,7 @@ function Onboarding() {
         })
         .eq("id", user.id);
       if (error) throw new Error(error.message);
+      clearAuthGateCache();
       await refresh();
       toast.success("Profile saved — your badge is ready");
       navigate({ to: "/badge", replace: true });
