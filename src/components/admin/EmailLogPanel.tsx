@@ -19,7 +19,7 @@ export function EmailLogPanel() {
         .from("email_logs")
         .select("id,recipient,recipient_name,subject,kind,status,error,created_at")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(200);
       if (error) throw new Error(error.message);
       return data;
     },
@@ -40,7 +40,7 @@ export function EmailLogPanel() {
   const failed = (logs.data ?? []).length - sent;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" aria-busy={logs.isFetching}>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="surface p-4">
           <p className="label-mono text-muted-foreground">Total logged</p>

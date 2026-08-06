@@ -47,16 +47,19 @@ export function InboxPanel() {
         .from("messages")
         .select("id,student_id,sender_id,from_admin,body,created_at")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(200);
       if (error) throw new Error(error.message);
       return data.reverse();
     },
   });
 
   const members = useQuery({
-    queryKey: ["admin-members"],
+    queryKey: ["all-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id,full_name,email");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id,email,full_name,registration_number,year,personal_email,photo_url,resume_url,profile_completed,created_at,is_active")
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
     },
@@ -102,7 +105,7 @@ export function InboxPanel() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[280px_1fr]" aria-busy={messages.isFetching || members.isFetching}>
       <div className="surface h-fit max-h-64 overflow-y-auto lg:max-h-none lg:overflow-hidden">
         <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-4 py-3">
           <h3 className="font-display text-sm font-bold">Threads</h3>

@@ -84,6 +84,7 @@ export function DomainPanel() {
     queryKey: ["sender-domains"],
     queryFn: () => list(),
     retry: false,
+    staleTime: 30 * 60_000,
   });
 
   const settings = useQuery({
