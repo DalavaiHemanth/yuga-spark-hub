@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Send, Inbox, Sparkles, Users } from "lucide-react";
@@ -36,30 +36,62 @@ const TEMPLATES: { label: string; body: string }[] = [
   },
 ];
 
+type Msg = {
+  id: string;
+  student_id: string;
+  sender_id: string;
+  from_admin: boolean;
+  body: string;
+  created_at: string;
+};
+
 export function InboxPanel() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [active, setActive] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
 
-  const messages = useQuery({
+  // Cached + incremental: the first load pulls a window of history, every later
+  // poll only asks for rows newer than the newest cached message.
+  const messages = useQuery<Msg[]>({
     queryKey: ["admin-messages"],
     refetchInterval: 20_000,
     refetchIntervalInBackground: false,
+    staleTime: 15_000,
+    gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const cached = queryClient.getQueryData<Msg[]>(["admin-messages"]) ?? [];
+      const since = cached.length > 0 ? cached[cached.length - 1]!.created_at : null;
+      const select = supabase
         .from("messages")
-        .select("id,student_id,sender_id,from_admin,body,created_at")
-        .order("created_at", { ascending: false })
+        .select("id,student_id,sender_id,from_admin,body,created_at");
+
+      if (!since) {
+        const { data, error } = await select
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if (error) throw new Error(error.message);
+        return (data ?? []).reverse() as Msg[];
+      }
+
+      const { data, error } = await select
+        .gt("created_at", since)
+        .order("created_at", { ascending: true })
         .limit(200);
       if (error) throw new Error(error.message);
-      return data.reverse();
+      const fresh = (data ?? []) as Msg[];
+      if (fresh.length === 0) return cached;
+      const seen = new Set(cached.map((m) => m.id));
+      return [...cached, ...fresh.filter((m) => !seen.has(m.id))];
     },
   });
 
   const members = useQuery({
     queryKey: ["all-profiles"],
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")

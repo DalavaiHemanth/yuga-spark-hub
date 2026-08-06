@@ -17,6 +17,10 @@ export function SenderSettings() {
 
   const settings = useQuery({
     queryKey: ["email-settings"],
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("app_settings")
