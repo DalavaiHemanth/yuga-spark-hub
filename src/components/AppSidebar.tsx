@@ -44,6 +44,13 @@ const RESOURCES = [
 
 type Item = { to: string; label: string; icon: typeof Trophy };
 
+function preloadAdminPanel(key: string) {
+  if (key === "mail") void import("@/components/admin/MailPanel");
+  else if (key === "emaillog") void import("@/components/admin/EmailLogPanel");
+  else if (key === "domains") void import("@/components/admin/DomainPanel");
+  else if (key === "inbox") void import("@/components/admin/InboxPanel");
+}
+
 export function AppSidebar() {
   const { profile, isAdmin, isOwner, signOut } = useAuth();
   const { state, isMobile, setOpenMobile } = useSidebar();
@@ -108,6 +115,8 @@ export function AppSidebar() {
                             to="/admin"
                             search={{ section: item.key }}
                             onClick={close}
+                             onPointerEnter={() => preloadAdminPanel(item.key)}
+                             onFocus={() => preloadAdminPanel(item.key)}
                             className="flex items-center gap-2.5"
                           >
                             <item.icon className="h-4 w-4 shrink-0" />
