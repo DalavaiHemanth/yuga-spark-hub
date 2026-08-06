@@ -33,7 +33,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import { Stethoscope } from "lucide-react";
-import { AdminSearch, type SearchHit } from "@/components/admin/AdminSearch";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,7 +132,6 @@ function AdminWorkspace() {
   const active: SectionKey = section ?? "members";
   const setActive = (key: SectionKey) =>
     navigate({ to: "/admin", search: { section: key }, replace: true });
-  const [seed, setSeed] = useState<{ key: SectionKey; query: string } | null>(null);
   const groups = ADMIN_NAV.map((g) => ({
     ...g,
     items: g.items.filter((i) => isOwner || !i.ownerOnly),
@@ -140,23 +139,10 @@ function AdminWorkspace() {
   const allItems = groups.flatMap((g) => g.items);
   const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
-  const query = seed && seed.key === current.key ? seed.query : undefined;
-
-  function handlePick(hit: SearchHit, q: string) {
-    const key: SectionKey = hit.kind === "student" ? "members" : "hackathons";
-    setActive(key);
-    setSeed({ key, query: hit.kind === "student" ? hit.title : q });
-  }
 
   return (
     <>
-    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <AdminSearch onPick={handlePick} />
-      <p className="hidden text-xs text-muted-foreground sm:block">
-        Find any student by name, registration number or email — or jump straight to a hackathon.
-      </p>
-    </div>
-    <div className="mt-4">
+      <div className="mt-4">
       <div className="sticky top-14 z-20 -mx-4 border-y border-border bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
         <div className="-mx-1 flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {groups.map((group) => (
@@ -203,8 +189,8 @@ function AdminWorkspace() {
             </p>
           </div>
         </header>
-        <div key={`${current.key}-${query ?? ""}`} className="rise mt-4 sm:mt-5">
-          {RENDERERS[current.key](query)}
+        <div key={current.key} className="rise mt-4 sm:mt-5">
+          {RENDERERS[current.key](undefined)}
         </div>
       </section>
     </div>
