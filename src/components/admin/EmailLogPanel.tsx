@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RowsSkeleton, StatTilesSkeleton, IndeterminateBar } from "@/components/admin/Skeletons";
 
 type Filter = "all" | "sent" | "failed";
 
@@ -41,6 +42,10 @@ export function EmailLogPanel() {
 
   return (
     <div className="space-y-4" aria-busy={logs.isFetching}>
+      {logs.isFetching && !logs.isLoading ? <IndeterminateBar label="Refreshing delivery log…" /> : null}
+      {logs.isLoading ? (
+        <StatTilesSkeleton />
+      ) : (
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="surface p-4">
           <p className="label-mono text-muted-foreground">Total logged</p>
@@ -55,6 +60,7 @@ export function EmailLogPanel() {
           <p className="mt-1 text-2xl font-semibold text-destructive">{failed}</p>
         </div>
       </div>
+      )}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Input
@@ -75,15 +81,15 @@ export function EmailLogPanel() {
               {f}
             </Button>
           ))}
-          <Button size="sm" variant="outline" onClick={() => void logs.refetch()}>
-            Refresh
+          <Button size="sm" variant="outline" disabled={logs.isFetching} onClick={() => void logs.refetch()}>
+            {logs.isFetching ? "Refreshing…" : "Refresh"}
           </Button>
         </div>
       </div>
 
       <div className="surface divide-y divide-border overflow-hidden">
         {logs.isLoading ? (
-          <p className="p-6 text-sm text-muted-foreground">Loading…</p>
+          <RowsSkeleton rows={6} />
         ) : rows.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground">
             No emails sent yet. Announcements and results emails appear here once delivered.

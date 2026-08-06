@@ -7,6 +7,11 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  IndeterminateBar,
+  MessagesSkeleton,
+  ThreadsSkeleton,
+} from "@/components/admin/Skeletons";
 
 const TEMPLATES: { label: string; body: string }[] = [
   {
@@ -66,6 +71,7 @@ export function InboxPanel() {
   });
 
   const list = messages.data ?? [];
+  const loading = messages.isLoading || members.isLoading;
   const threads = Array.from(new Set(list.map((m) => m.student_id)));
   const current = active ?? threads[0] ?? null;
   const nameOf = (id: string) => {
@@ -126,7 +132,9 @@ export function InboxPanel() {
             </span>
           </div>
         </div>
-        {threads.length === 0 ? (
+        {loading ? (
+          <ThreadsSkeleton />
+        ) : threads.length === 0 ? (
           <div className="p-5 text-center">
             <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
               <Inbox className="h-4 w-4" />
@@ -177,7 +185,9 @@ export function InboxPanel() {
           ) : null}
         </div>
         <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
-          {current
+          {loading ? (
+            <MessagesSkeleton />
+          ) : current
             ? list
                 .filter((m) => m.student_id === current)
                 .map((m) => (
@@ -199,6 +209,7 @@ export function InboxPanel() {
             : null}
         </div>
         <div className="space-y-2.5 border-t border-border p-4">
+          {sending ? <IndeterminateBar label="Sending reply…" /> : null}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 pr-1 text-[11px] font-medium text-muted-foreground">
               <Sparkles className="h-3 w-3" /> Templates
