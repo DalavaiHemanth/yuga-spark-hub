@@ -189,8 +189,8 @@ function AdminWorkspace() {
             </p>
           </div>
         </header>
-        <div key={`${current.key}-${query ?? ""}`} className="rise mt-4 sm:mt-5">
-          {RENDERERS[current.key](query)}
+        <div key={current.key} className="rise mt-4 sm:mt-5">
+          {RENDERERS[current.key](undefined)}
         </div>
       </section>
     </div>
