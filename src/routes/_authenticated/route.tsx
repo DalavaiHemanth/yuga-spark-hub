@@ -1,34 +1,30 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAccess } from "@/lib/route-access";
-
-type Gate = { userId: string; isAdmin: boolean; profileCompleted: boolean | null };
+import {
+  clearAuthGateCache,
+  readAuthGate,
+  writeAuthGate,
+  type AuthGate,
+} from "@/lib/auth-gate";
 
 /**
- * The auth gate ran three network round-trips on every single navigation,
- * which made the whole app feel sluggish. Cache it briefly per user instead.
+ * The gate used to run three network round-trips on every navigation, which
+ * made the whole app feel sluggish. Now it is cached briefly per user.
  */
-let cached: { userId: string; at: number; value: Gate } | null = null;
-const GATE_TTL = 60_000;
-
-export function clearAuthGateCache() {
-  cached = null;
-}
-
-async function loadGate(userId: string): Promise<Gate> {
-  if (cached && cached.userId === userId && Date.now() - cached.at < GATE_TTL) {
-    return cached.value;
-  }
+async function loadGate(userId: string): Promise<AuthGate> {
+  const hit = readAuthGate(userId);
+  if (hit) return hit;
   const [{ data: profile }, { data: roles }] = await Promise.all([
     supabase.from("profiles").select("profile_completed").eq("id", userId).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
   ]);
-  const value: Gate = {
+  const value: AuthGate = {
     userId,
     isAdmin: Boolean(roles?.some((r) => r.role === "admin")),
     profileCompleted: profile ? profile.profile_completed : null,
   };
-  cached = { userId, at: Date.now(), value };
+  writeAuthGate(value);
   return value;
 }
 
