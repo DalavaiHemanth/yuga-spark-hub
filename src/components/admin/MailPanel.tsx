@@ -29,12 +29,12 @@ export function MailPanel() {
   const [kind, setKind] = useState<"broadcast" | "announcement" | "results">("broadcast");
 
   const members = useQuery({
-    queryKey: ["mail-members"],
+    queryKey: ["all-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id,email,personal_email,full_name,profile_completed,is_active")
-        .order("full_name");
+        .select("id,email,full_name,registration_number,year,personal_email,photo_url,resume_url,profile_completed,created_at,is_active")
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
     },

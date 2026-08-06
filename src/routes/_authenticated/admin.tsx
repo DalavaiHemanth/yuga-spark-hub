@@ -155,17 +155,6 @@ function AdminWorkspace() {
   const current = allItems.find((i) => i.key === active) ?? allItems[0]!;
   const Icon = current.icon;
 
-  useEffect(() => {
-    const preload = () => {
-      preloadFastPanel("mail");
-      preloadFastPanel("emaillog");
-      preloadFastPanel("domains");
-      preloadFastPanel("inbox");
-    };
-    const timer = window.setTimeout(preload, 400);
-    return () => window.clearTimeout(timer);
-  }, []);
-
   return (
     <>
       <div className="mt-4">
@@ -254,7 +243,7 @@ function MembersPanelInner({ initialQuery }: { initialQuery?: string | undefined
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id,email,full_name,registration_number,year,personal_email,photo_url,resume_url,profile_completed,created_at,is_active")
         .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;

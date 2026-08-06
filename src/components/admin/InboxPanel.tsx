@@ -54,9 +54,12 @@ export function InboxPanel() {
   });
 
   const members = useQuery({
-    queryKey: ["admin-members"],
+    queryKey: ["all-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id,full_name,email");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id,email,full_name,registration_number,year,personal_email,photo_url,resume_url,profile_completed,created_at,is_active")
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
     },
